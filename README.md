@@ -17,7 +17,6 @@ npm run dev
 npm run lint
 npm test
 npm run build:pages        # 静态导出（跨平台，Windows/macOS/Linux 均可）
-npm run deploy             # 一键部署：构建 + 提交 + 推送 origin/main
 npm run audio:generate     # 生成分轨与氛围曲（不覆盖告别语音）
 ```
 
@@ -43,34 +42,6 @@ npm run audio:generate     # 生成分轨与氛围曲（不覆盖告别语音）
 - 正常平台界面**无背景音乐**；检索到「零信号」并收到检索告警后，启用悬疑氛围曲（`background-suspense.wav`）；进入残留账号或身份侦测阶段，切换惊悚氛围曲（`background-horror.wav`）。
 - 播放语音分轨或告别语音时，BGM 自动压低；侧栏与账号安全页可静音，偏好跨刷新保留。
 - 告别语音为 Windows 中文语音合成（来源见 `public/audio/STEM_SOURCES.md`）。
-
-## 部署
-
-### 一键部署（推荐）
-
-```bash
-npm run deploy
-```
-
-脚本会依次执行：
-
-1. `npm run build:pages` 静态构建
-2. `git add -A` 暂存全部改动
-3. `git commit` 提交（默认信息为 `Deploy: update AkaneRei Offline`，可用 `npm run deploy -- "自定义信息"`）
-4. `git push origin main`
-
-推送 `main` 后，GitHub Actions 会自动构建并部署到 GitHub Pages。
-
-### 手动部署
-
-```bash
-git add -A
-git commit -m "你的提交信息"
-git push origin main
-```
-
-- 游戏：<https://apxs114514.github.io/AkaneRei-Offline/>
-- 全案真相：<https://apxs114514.github.io/AkaneRei-Offline/truth/>
 
 ## 设计纪律
 
