@@ -43,6 +43,11 @@ npm run audio:generate     # 生成分轨与氛围曲（不覆盖告别语音）
 - 播放语音分轨或告别语音时，BGM 自动压低；侧栏与账号安全页可静音，偏好跨刷新保留。
 - 告别语音为 Windows 中文语音合成（来源见 `public/audio/STEM_SOURCES.md`）。
 
+## 在线地址
+
+- 游戏：<https://apxs114514.github.io/AkaneRei-Offline/>
+- 全案真相：<https://apxs114514.github.io/AkaneRei-Offline/truth/>
+
 ## 设计纪律
 
 - 平台表面必须是像真的聊天软件，不是恐怖游戏菜单；恐怖通过小状态变化升级（时间戳异常、已读回执、零信号标记、云端同步、账号状态、记忆覆盖）。
