@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>AkaneRei Offline — Cover</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { width: 1200px; height: 630px; overflow: hidden; font-family: -apple-system, "Segoe UI", "Microsoft YaHei", "Noto Sans SC", sans-serif; }
+  .cover { position: relative; width: 1200px; height: 630px; background: radial-gradient(1200px 600px at 75% 10%, #16222e 0%, #0f141b 45%, #0a0e13 100%); color: #d9dee5; display: flex; align-items: center; padding: 0 72px; gap: 64px; }
+  /* 零信号波形背景 */
+  .wave-bg { position: absolute; inset: 0; opacity: .05; display: flex; align-items: center; justify-content: center; gap: 26px; }
+  .wave-bg i { width: 90px; height: 200px; border-radius: 8px; background: #2f7cf6; }
+  .wave-bg i.gray { background: #3a4552; }
+  /* 手机 */
+  .phone { position: relative; width: 300px; flex: none; border-radius: 34px; border: 1px solid #2c3642; background: #0d131a; padding: 14px 12px 18px; box-shadow: 0 30px 80px rgba(0,0,0,.6); }
+  .phone::before { content: ""; display: block; width: 90px; height: 6px; border-radius: 3px; background: #2c3642; margin: 0 auto 14px; }
+  .msg { display: flex; margin: 10px 6px; }
+  .msg .bubble { max-width: 84%; border-radius: 14px; padding: 9px 12px; font-size: 14px; line-height: 1.5; }
+  .msg.them { justify-content: flex-start; }
+  .msg.me { justify-content: flex-end; }
+  .bubble.them { background: #222b36; color: #dbe2ea; border-top-left-radius: 4px; }
+  .bubble.me { background: linear-gradient(180deg, #2f7cf6, #2568d4); color: #fff; border-top-right-radius: 4px; }
+  .bubble .who { display: block; font-size: 10px; color: #6f7c8a; margin-bottom: 3px; }
+  .call { border: 1px solid #2c3642; border-radius: 14px; margin: 12px 6px; padding: 10px 12px; background: #111921; }
+  .call b { font-size: 13px; color: #e6ebf1; }
+  .call span { display: block; font-size: 11px; color: #6f7c8a; margin-top: 2px; }
+  .offline { margin: 16px 6px 0; text-align: center; font-family: "SFMono-Regular", Consolas, monospace; font-size: 12px; color: #b03a3a; letter-spacing: .1em; border-top: 1px dashed rgba(176,58,58,.4); padding-top: 12px; }
+  /* 标题区 */
+  .titles { position: relative; }
+  .echos { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #8a94a0; letter-spacing: .22em; margin-bottom: 18px; }
+  .echos .mark { width: 26px; height: 26px; border-radius: 7px; background: #2f7cf6; display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 13px; }
+  h1 { font-size: 58px; font-weight: 800; letter-spacing: .02em; color: #f2f5f8; line-height: 1.1; }
+  h1 em { font-style: normal; color: #b03a3a; }
+  .sub { margin-top: 16px; font-size: 17px; color: #aab4bf; }
+  .sub b { color: #e6ebf1; }
+  .wave-mini { display: flex; align-items: center; gap: 5px; margin-top: 30px; }
+  .wave-mini i { width: 12px; height: 34px; border-radius: 3px; background: #2f7cf6; }
+  .wave-mini i.gray { background: #39444f; height: 22px; }
+  .wave-mini i.red { background: #b03a3a; }
+  .tag { margin-top: 26px; font-size: 13px; color: #6f7c8a; font-family: "SFMono-Regular", Consolas, monospace; }
+  /* 底部 */
+  .foot { position: absolute; left: 72px; right: 72px; bottom: 26px; display: flex; justify-content: space-between; font-size: 11px; color: #39444f; font-family: "SFMono-Regular", Consolas, monospace; }
+</style>
+</head>
+<body>
+  <div class="cover">
+    <div class="wave-bg" aria-hidden="true">
+      <i></i><i class="gray"></i><i></i><i class="gray"></i><i></i>
+    </div>
+    <div class="phone" aria-hidden="true">
+      <div class="msg them"><div class="bubble them"><span class="who">汐泊诺思</span>今天也是第一次见你。</div></div>
+      <div class="msg me"><div class="bubble me">哈哈哈你们别闹了</div></div>
+      <div class="msg them"><div class="bubble them"><span class="who">N9Rtz</span>夜深了。通宵语音吗？</div></div>
+      <div class="call"><b>N9Rtz · 语音通话</b><span>00:04:08 · 通话中</span></div>
+      <div class="offline">04:08 · 已离线</div>
+    </div>
+    <div class="titles">
+      <div class="echos"><span class="mark">E</span>回声 ECHOS</div>
+      <h1>AkaneRei<br><em>Offline</em></h1>
+      <div class="sub">别让<b>重要的人</b>掉线。</div>
+      <div class="wave-mini" aria-hidden="true">
+        <i></i><i></i><i class="gray"></i><i class="gray"></i><i class="red"></i>
+      </div>
+      <div class="tag">208 天后，你的账号仍然每晚 04:08 上线。</div>
+    </div>
+    <div class="foot"><span>ECHOS v1.0.0</span><span>一个关于连接与告别的恐怖 ARG</span></div>
+  </div>
+</body>
+</html>
