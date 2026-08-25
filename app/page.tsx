@@ -765,7 +765,7 @@ function StemPuzzle({ done, onDone }: { done: boolean; onDone: () => void }) {
       el.pause();
       setPlaying(null);
     } else {
-      audioRefs.current[playing]?.pause();
+      if (playing) audioRefs.current[playing]?.pause();
       void el.play().catch(() => setPlaying(null));
       setPlaying(id);
     }
@@ -1577,6 +1577,8 @@ function SignalGame({ onFinish }: { onFinish: () => void }) {
       last = now;
       const s = stateRef.current;
       const frames = dt / 16.67;
+        const px = PLAYER_X;
+        const py = s.playerY;
 
       if (!s.done) {
         s.vy += 0.55 * frames;
@@ -1592,8 +1594,6 @@ function SignalGame({ onFinish }: { onFinish: () => void }) {
         for (const b of s.course.balls) b.x -= s.speed * frames;
 
         // 碰撞检测
-        const px = PLAYER_X;
-        const py = s.playerY;
         let hit = false;
         for (const ob of s.course.obstacles) {
           if (ob.x < px + PLAYER_SIZE && ob.x + ob.w > px + 6 && GROUND - ob.h < py + PLAYER_SIZE && GROUND > py) {
