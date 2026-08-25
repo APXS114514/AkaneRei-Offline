@@ -102,29 +102,36 @@ test("CASE 03 playlist and cold backup exist with locked password", async () => 
   assert.match(page, /FRIEND-KEEP 策略提示：不得动用私情/);
   assert.match(page, /离线（用户主动）/);
   assert.match(page, /shio-farewell\.wav/);
-  // 角色实名契约
-  assert.match(page, /实名.*巴印/);
-  assert.match(page, /实名.*李铭泽/);
-  assert.match(page, /王镓铭/);
   // 新内容：头像、噪音、干扰档案、告别转写、戏份深化
   assert.match(page, /avatars\/n9rtz\.svg/);
   assert.match(page, /avatars\/shio\.svg/);
   assert.match(page, /奶茶店第二杯半价/);
   assert.match(page, /例行维护公告/);
   assert.match(page, /取件码 2613/);
-  // 噪音成员实名（干扰项）
+  // 噪音成员（干扰项）
   assert.match(page, /APXS/);
-  assert.match(page, /刘睿航/);
   assert.match(page, /Rtwyzz/);
-  assert.match(page, /李磊/);
   assert.match(page, /Roy/);
-  assert.match(page, /张贤德/);
-  assert.match(page, /我是巴印/);
+  // 主角实名线索允许出现
   assert.match(page, /茜，我该拉住你的/);
-  assert.match(page, /账号注销审计（李铭泽）/);
+  assert.match(page, /晓茜/);
+  // 其他人物真名在游戏内一律不揭示
+  for (const name of ["巴印", "李铭泽", "王镓铭", "刘睿航", "李磊", "张贤德"]) {
+    assert.doesNotMatch(page, new RegExp(name), `游戏源码不应出现真名：${name}`);
+  }
+  assert.match(page, /账号注销审计/);
+  assert.doesNotMatch(page, /账号注销审计（李铭泽）/);
   assert.match(page, /HZ-COMPLIANCE/);
-  assert.match(page, /我是镓铭/);
+  assert.doesNotMatch(page, /我是巴印/);
   assert.match(page, /她每晚都在对不认识她的你说这句话/);
+});
+
+test("forget action clears all local game data", async () => {
+  const page = await readGameSource();
+  assert.match(page, /clearLocalData/);
+  assert.match(page, /SAVE_PREFIX = "echos-"/);
+  assert.match(page, /sessionStorage\.clear\(\)/);
+  assert.match(page, /caches\.delete/);
 });
 
 test("cover image and avatars are shipped in public assets", async () => {
@@ -177,9 +184,14 @@ test("completion page and signal game exist", async () => {
   assert.match(page, /#\/app\/completion/);
   // 音频分层
   assert.match(page, /AudioLayer/);
-  assert.match(page, /background-suspense\.wav/);
-  assert.match(page, /background-horror\.wav/);
+  assert.match(page, /background-suspense\.mp3/);
+  assert.match(page, /background-horror\.mp3/);
+  assert.match(page, /background-farewell\.mp3/);
+  assert.match(page, /background-rain\.mp3/);
   assert.match(page, /bgmMuted/);
+  // 音轨触发规则：farewell 覆盖 suspense（case03 后不再放悬疑曲）
+  assert.match(page, /const farewell = game\.case03 === "done" \|\| game\.ending !== "none"/);
+  assert.doesNotMatch(page, /case03 === "done" \|\| game\.case02 !== "none"/);
 });
 
 test("truth page is a separate static route with spoiler warning", async () => {

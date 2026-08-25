@@ -556,14 +556,8 @@ export function ColdBackup({ done, onSuccess }: { done: boolean; onSuccess: () =
               />
             </div>
             <div className="backup-note" style={{ marginTop: 8 }}>
-              转写：「如果……有一天你不再上线，我会把歌单听完。我是镓铭。晚安。」<br />
+              转写：「如果……有一天你不再上线，我会把歌单听完。晚安。」<br />
               录音在 04:06 停止，比事故早两分钟。她没能发出去。
-            </div>
-
-            <h5 className="backup-title">实名信息</h5>
-            <div className="backup-draft">
-              王镓铭
-              <span className="bl-meta">冷备份档案 · 实名登记</span>
             </div>
 
             <h5 className="backup-title">AkaneRei 本地草稿（未发送）</h5>
@@ -1116,16 +1110,27 @@ export function CompletionPage({
 
 /* ---------------- 音频分层（BGM） ---------------- */
 
+/** 各音轨音量：雨声为环境底噪，不能盖过消息提示音 */
+const TRACK_VOLUME: Record<"rain" | "suspense" | "horror" | "farewell", number> = {
+  rain: 0.12,
+  suspense: 1,
+  horror: 1,
+  farewell: 1,
+};
+
 export function AudioLayer({ game }: { game: GameState }) {
   const ref = useRef<HTMLAudioElement>(null);
   const startedRef = useRef(false);
 
-  // 音轨选择：正常平台无 BGM；零信号告警后启用悬疑曲；残留账号/身份侦测用惊悚曲
-  const track: "none" | "suspense" | "horror" = useMemo(() => {
+  // 音轨选择（优先级从高到低）：惊悚 > 告别 > 悬疑 > 日常雨声
+  const track: "rain" | "suspense" | "horror" | "farewell" = useMemo(() => {
     const horror = game.luvisLogin || (game.identityCheck && !game.memoryBlocked);
-    const suspense =
-      game.surveillanceSeen["零信号"] || game.case02 !== "none" || game.case03 === "done";
-    return horror ? "horror" : suspense ? "suspense" : "none";
+    const farewell = game.case03 === "done" || game.ending !== "none";
+    const suspense = game.surveillanceSeen["零信号"] || game.case02 !== "none";
+    if (horror) return "horror";      // /audio/background-horror.mp3（Lights）
+    if (farewell) return "farewell";  // /audio/background-farewell.mp3（I Walk With Ghosts）
+    if (suspense) return "suspense";  // /audio/background-suspense.mp3（Countdown）
+    return "rain";                    // /audio/background-rain.mp3（默认日常雨声）
   }, [game]);
 
   // 首次用户操作后开始播放（浏览器自动播放策略）
@@ -1134,7 +1139,7 @@ export function AudioLayer({ game }: { game: GameState }) {
       if (startedRef.current) return;
       startedRef.current = true;
       const el = ref.current;
-      if (el && track !== "none" && !game.bgmMuted) void el.play().catch(() => {});
+      if (el && !game.bgmMuted) void el.play().catch(() => {});
     };
     window.addEventListener("pointerdown", start);
     window.addEventListener("keydown", start);
@@ -1144,22 +1149,18 @@ export function AudioLayer({ game }: { game: GameState }) {
     };
   }, [track, game.bgmMuted]);
 
-  // 音轨切换
+  // 音轨切换（含音量映射）
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const src =
-      track === "horror"
-        ? "/audio/background-horror.wav"
-        : track === "suspense"
-          ? "/audio/background-suspense.wav"
-          : "";
+    const src = `/audio/background-${track}.mp3`;
     if (el.getAttribute("data-src") !== src) {
       el.pause();
       el.setAttribute("data-src", src);
       el.setAttribute("src", assetPath(src));
       el.load();
-      if (startedRef.current && src && !game.bgmMuted) void el.play().catch(() => {});
+      el.volume = TRACK_VOLUME[track];
+      if (startedRef.current && !game.bgmMuted) void el.play().catch(() => {});
     }
   }, [track, game.bgmMuted]);
 
@@ -1167,7 +1168,10 @@ export function AudioLayer({ game }: { game: GameState }) {
   useEffect(() => {
     const el = ref.current;
     const duck = () => { if (el) el.volume = 0.16; };
-    const unduck = () => { if (el) el.volume = 1; };
+    const unduck = () => {
+      if (!el) return;
+      el.volume = (el.getAttribute("data-src") ?? "").includes("background-rain") ? 0.12 : 1;
+    };
     document.addEventListener("play", duck, true);
     document.addEventListener("pause", unduck, true);
     document.addEventListener("ended", unduck, true);

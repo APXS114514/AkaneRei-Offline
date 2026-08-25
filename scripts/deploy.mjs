@@ -12,7 +12,6 @@
  * - 推送使用 origin/main；若需要自定义远程/分支，可手动改下方常量。
  */
 import { spawnSync } from "node:child_process";
-import { existsSync } from "node:fs";
 
 const REMOTE = "origin";
 const BRANCH = "main";

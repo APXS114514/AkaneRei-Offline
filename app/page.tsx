@@ -8,6 +8,7 @@ import type { GameRecord, GameState, Msg, Route } from "./game/types";
 import {
   SAVE_KEY,
   assetPath,
+  clearLocalData,
   initialGame,
   parseRoute,
   readSavedGame,
@@ -156,7 +157,7 @@ export default function Page() {
   };
 
   const forgetAll = () => {
-    localStorage.removeItem(SAVE_KEY);
+    clearLocalData();
     setGame({ ...initialGame });
     setConfirmReset(false);
     setLoginAccount("");

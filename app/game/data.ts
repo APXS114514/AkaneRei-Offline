@@ -33,7 +33,7 @@ export function n9rtzMessages(case01: GameState["case01"]): Msg[] {
         id: "n4",
         from: "them",
         name: "N9Rtz",
-        text: "你终于查到这里了。我是巴印——你可能不记得了。\n那天我在电话里听到了一切…… 我听你掉下去。\n你说信号断了就去弄路由器，我说别去。茜，我该拉住你的。\nLuvisDrug 说这个平台有问题，让我别再跟你说话——然后他自己不见了。查他。",
+        text: "你终于查到这里了。你可能不记得我了。\n那天我在电话里听到了一切…… 我听你掉下去。\n你说信号断了就去弄路由器，我说别去。茜，我该拉住你的。\nLuvisDrug 说这个平台有问题，让我别再跟你说话——然后他自己不见了。查他。",
         time: "现在",
         kind: "abnormal",
       },
@@ -57,7 +57,7 @@ export function shioMessages(case02Done: boolean, case03Done: boolean): Msg[] {
   if (case03Done) {
     msgs.push(
       { id: "s5", from: "system", kind: "ghost", text: "冷备份破拆后，汐泊诺思账号状态变为「离线（用户主动）」。她没有再发来新的消息。" },
-      { id: "s6", from: "system", kind: "ghost", text: "她的冷备份实名登记显示：王镓铭。208 条「今天也是第一次见你。」的发送者，一直是同一个人——她每晚都在对不认识她的你说这句话。" }
+      { id: "s6", from: "system", kind: "ghost", text: "冷备份确认：208 条「今天也是第一次见你。」的发送者，一直是同一个人——她每晚都在对不认识她的你说这句话。" }
     );
   }
   return msgs;
@@ -88,11 +88,9 @@ export const RECORDS: Record<string, GameRecord> = {
     body: [
       "头像：深夜的城市街道。",
       "个性签名：「夜晚才是真的。」",
-      "实名：巴印。",
       "与 N9Rtz 的会话从 2026-04-08 04:07 之后没有任何新消息，但对方状态长期显示「在线」。",
     ],
     fields: [
-      { k: "实名", v: "巴印" },
       { k: "账号状态", v: "在线" },
       { k: "最后消息", v: "2026-04-08 04:07「你还在吗？」（已读）" },
       { k: "最后活跃", v: "04:09（随后 208 天未发言）" },
@@ -174,11 +172,9 @@ export const RECORDS: Record<string, GameRecord> = {
     body: [
       "头像：一张波形图，角落标注「97.0 HZ」。",
       "个性签名：「Love is Drug。」",
-      "实名：李铭泽。",
       "账号已于 2026-06-02 注销，但资料卡下方出现一行不属于正常界面的小字：「该账号仍在写入」。",
     ],
     fields: [
-      { k: "实名", v: "李铭泽" },
       { k: "账号状态", v: "已注销 2026-06-02", abnormal: true },
       { k: "写入状态", v: "仍在写入", abnormal: true },
       { k: "头像标注", v: "97.0 HZ" },
@@ -334,7 +330,7 @@ export const RECORDS: Record<string, GameRecord> = {
       "我把所有证据整理好，准备发出去。",
       "然后我看到自己的处置记录——创建时间比我发起的「注销申请」早了 3 天。",
       "清除流程是预先存在的。他们早就准备好了我的位置。",
-      "档案上写的是我的实名：李铭泽。他们从一开始就知道我是谁。",
+      "档案上写的是我的实名。他们从一开始就知道我是谁。",
       "有人在等一个不会回复的人。告诉她别等了。",
     ],
     require: (g) => g.luvisLogin,
@@ -343,16 +339,16 @@ export const RECORDS: Record<string, GameRecord> = {
     id: "rec-luvis-audit",
     kind: "注销审计",
     chapter: "case02",
-    title: "账号注销审计（李铭泽）",
+    title: "账号注销审计",
     source: "回声 ECHOS · 合规审计",
     snippet: "处置记录创建时间早于注销申请 3 天。处置人：HZ-COMPLIANCE。",
     body: [
-      "账号 LuvisDrug（实名：李铭泽）的注销审计记录。",
+      "账号 LuvisDrug 的注销审计记录。",
       "注销申请由本人发起，但处置记录创建时间早于申请时间 3 天。",
       "清除流程是预先存在的。",
     ],
     fields: [
-      { k: "注销申请人", v: "LuvisDrug（实名：李铭泽）" },
+      { k: "注销申请人", v: "LuvisDrug" },
       { k: "申请时间", v: "2026-06-02" },
       { k: "处置记录创建", v: "2026-05-30（早于申请 3 天）", abnormal: true },
       { k: "处置人", v: "HZ-COMPLIANCE（系统）" },
@@ -449,14 +445,12 @@ export const RECORDS: Record<string, GameRecord> = {
     chapter: "meta",
     title: "APXS 资料卡",
     source: "联系人资料",
-    snippet: "实名：刘睿航。个性签名：「夜色是滤镜。」",
+    snippet: "个性签名：「夜色是滤镜。」",
     body: [
-      "实名：刘睿航。",
       "个性签名：「夜色是滤镜。」",
       "深夜活跃，常在全员群发起拼单与闲聊。与本案调查无关联。",
     ],
     fields: [
-      { k: "实名", v: "刘睿航" },
       { k: "活跃时段", v: "23:00 – 05:00" },
     ],
   },
@@ -466,14 +460,12 @@ export const RECORDS: Record<string, GameRecord> = {
     chapter: "meta",
     title: "Rtwyzz 资料卡",
     source: "联系人资料",
-    snippet: "实名：李磊。个性签名：「潜水中，勿扰。」",
+    snippet: "个性签名：「潜水中，勿扰。」",
     body: [
-      "实名：李磊。",
       "个性签名：「潜水中，勿扰。」",
       "常驻隐身状态，偶尔在全员群冒泡。与本案调查无关联。",
     ],
     fields: [
-      { k: "实名", v: "李磊" },
       { k: "在线状态", v: "隐身" },
     ],
   },
@@ -483,14 +475,12 @@ export const RECORDS: Record<string, GameRecord> = {
     chapter: "meta",
     title: "Roy 资料卡",
     source: "联系人资料",
-    snippet: "实名：张贤德。个性签名：「系统消息收发员。」",
+    snippet: "个性签名：「系统消息收发员。」",
     body: [
-      "实名：张贤德。",
       "个性签名：「系统消息收发员。」",
       "喜欢第一时间转发平台公告与更新预告。与本案调查无关联。",
     ],
     fields: [
-      { k: "实名", v: "张贤德" },
       { k: "个性签名", v: "「系统消息收发员。」" },
     ],
   },
@@ -503,7 +493,7 @@ export const SEARCH_INDEX: { terms: string[]; recId: string }[] = [
   { terms: ["录音", "事故夜", "分轨"], recId: "rec-audio-stems" },
   { terms: ["时间线", "复原", "事件序列"], recId: "rec-timeline" },
   { terms: ["LuvisDrug"], recId: "rec-luvisdrug-profile" },
-  { terms: ["注销审计", "李铭泽"], recId: "rec-luvis-audit" },
+  { terms: ["注销审计"], recId: "rec-luvis-audit" },
   { terms: ["赫兹", "回声网络", "供应商"], recId: "rec-hz-vendor" },
   { terms: ["文化基金", "资金", "财务"], recId: "rec-hz-fund" },
   { terms: ["汐泊诺思"], recId: "rec-shio-profile" },
@@ -514,9 +504,9 @@ export const SEARCH_INDEX: { terms: string[]; recId: string }[] = [
   { terms: ["守则", "用户协议", "连接一致性"], recId: "rec-rules" },
   { terms: ["维护", "公告"], recId: "rec-plat-notice" },
   { terms: ["快递", "驿站", "取件"], recId: "rec-express" },
-  { terms: ["APXS", "刘睿航"], recId: "rec-apxs-profile" },
-  { terms: ["Rtwyzz", "李磊"], recId: "rec-rtwyzz-profile" },
-  { terms: ["Roy", "张贤德"], recId: "rec-roy-profile" },
+  { terms: ["APXS"], recId: "rec-apxs-profile" },
+  { terms: ["Rtwyzz"], recId: "rec-rtwyzz-profile" },
+  { terms: ["Roy"], recId: "rec-roy-profile" },
   { terms: ["事故", "坠亡", "晓茜"], recId: "rec-accident" },
 ];
 

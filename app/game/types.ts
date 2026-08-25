@@ -1,8 +1,35 @@
 /* 类型、路由与存档 —— 由 app/page.tsx 拆分而来 */
 export const SAVE_KEY = "echos-arg-v1";
+export const SAVE_PREFIX = "echos-";
 export const SAVE_VERSION = 1;
 
 export const assetPath = (p: string) => `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}${p}`;
+
+/** 彻底清除本机游戏数据：localStorage 全部游戏键 + sessionStorage + 浏览器 Cache Storage */
+export function clearLocalData(): void {
+  try {
+    const keys: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k.startsWith(SAVE_PREFIX)) keys.push(k);
+    }
+    for (const k of keys) localStorage.removeItem(k);
+  } catch {
+    /* 存储不可用时静默 */
+  }
+  try {
+    sessionStorage.clear();
+  } catch {
+    /* 忽略 */
+  }
+  try {
+    if (typeof caches !== "undefined") {
+      void caches.keys().then((names) => Promise.all(names.map((n) => caches.delete(n)))).catch(() => {});
+    }
+  } catch {
+    /* 忽略 */
+  }
+}
 /* ---------------- 路由 ---------------- */
 
 export type Route =

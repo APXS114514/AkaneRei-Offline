@@ -124,62 +124,11 @@ generate("stem-crash.wav", 6.0, (out, n, rng) => {  for (let i = 0; i < n; i++) 
 // ⑤ 汐泊诺思告别语音：已由 Windows 中文语音（Microsoft Huihui）合成，
 //   见 public/audio/STEM_SOURCES.md。不要用占位哼唱覆盖该文件。
 
-/* ⑥ 悬疑氛围曲（Countdown 风格占位）：低沉小调持续音 + 缓慢脉冲，36s */
-generate("background-suspense.wav", 36.0, (out, n) => {
-  // 基频 A2=110Hz，加纯五度 E3=164.81 与根音低八度 A1=55Hz
-  const drone = [
-    { f: 55.0, a: 0.16 },
-    { f: 110.0, a: 0.2 },
-    { f: 164.81, a: 0.08 },
-  ];
-  // 稀疏的高音脉冲（每 4s 一个，不同音高）
-  const plucks = [
-    { t: 2.0, f: 220.0 }, { t: 8.0, f: 246.94 }, { t: 14.5, f: 207.65 },
-    { t: 20.0, f: 261.63 }, { t: 27.0, f: 196.0 }, { t: 32.5, f: 233.08 },
-  ];
-  for (let i = 0; i < n; i++) {
-    const t = i / SAMPLE_RATE;
-    let v = 0;
-    for (const d of drone) {
-      const lfo = 1 + 0.03 * Math.sin(2 * Math.PI * 0.05 * t + d.f);
-      v += Math.sin(2 * Math.PI * d.f * t) * d.a * lfo;
-    }
-    // 缓慢呼吸式整体起伏
-    v *= 0.6 + 0.4 * Math.sin(2 * Math.PI * t / 36.0);
-    for (const p of plucks) {
-      const dt = t - p.t;
-      if (dt >= 0 && dt < 1.4) {
-        v += Math.sin(2 * Math.PI * p.f * dt) * 0.07 * Math.exp(-2.2 * dt);
-      }
-    }
-    out[i] = v;
-  }
-});
+// ⑥⑦ 背景氛围曲：已替换为真实授权曲目（见 public/audio/STEM_SOURCES.md）：
+//   background-suspense.mp3 = Alexander Nakarada - Countdown
+//   background-horror.mp3   = Rafael Krux - Lights
+//   background-farewell.mp3 = Fan Yi Sun studio - I Walk With Ghosts
+//   background-rain.mp3     = 雨声（白噪音助眠）
+//   本脚本不再生成占位 WAV。
 
-/* ⑦ 惊悚氛围曲（Lights 风格占位）：不协和小二度簇 + 渐强涌动，36s */
-generate("background-horror.wav", 36.0, (out, n) => {
-  const cluster = [
-    { f: 73.42, a: 0.15 },  // D2
-    { f: 77.78, a: 0.13 },  // D#2（小二度，不协和）
-    { f: 146.83, a: 0.08 },
-    { f: 155.56, a: 0.07 },
-  ];
-  for (let i = 0; i < n; i++) {
-    const t = i / SAMPLE_RATE;
-    let v = 0;
-    // 涌动包络：每 9s 一个渐强-骤停周期
-    const phase = (t % 9.0) / 9.0;
-    const swell = phase < 0.85 ? Math.pow(phase / 0.85, 2.2) : 0;
-    for (const c of cluster) {
-      const trem = 0.9 + 0.2 * Math.sin(2 * Math.PI * 0.9 * t);
-      v += Math.sin(2 * Math.PI * c.f * t) * c.a * trem;
-    }
-    // 低频心跳
-    const beat = Math.max(0, Math.sin(2 * Math.PI * 0.55 * t)) ** 8;
-    v += Math.sin(2 * Math.PI * 36.7 * t) * 0.1 * beat;
-    v *= 0.35 + 0.65 * swell;
-    out[i] = v;
-  }
-});
-
-console.log("完成。来源与替换计划见 public/audio/STEM_SOURCES.md。");
+console.log("完成。来源与授权见 public/audio/STEM_SOURCES.md。");
