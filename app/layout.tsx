@@ -16,11 +16,13 @@ export const metadata: Metadata = {
     title,
     description,
     type: "website",
+    images: [{ url: new URL("cover.png", siteUrl).toString(), width: 1200, height: 630, alt: title }],
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title,
     description,
+    images: [new URL("cover.png", siteUrl).toString()],
   },
 };
 

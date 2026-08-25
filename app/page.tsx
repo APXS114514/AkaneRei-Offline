@@ -13,6 +13,8 @@ import type { ReactNode } from "react";
 const SAVE_KEY = "echos-arg-v1";
 const SAVE_VERSION = 1;
 
+const assetPath = (p: string) => `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}${p}`;
+
 /* ---------------- 路由 ---------------- */
 
 type Route =
@@ -151,6 +153,7 @@ interface Conv {
   kind: "group" | "dm" | "bot" | "ghost";
   color: string;
   initials: string;
+  avatar: string;
   status: string;
   statusClass?: "dead";
   preview: string;
@@ -159,11 +162,11 @@ interface Conv {
 }
 
 const CONVS: Conv[] = [
-  { id: "everyone", name: "全员群", kind: "group", color: "#2f7cf6", initials: "全", status: "208 名成员", preview: "群公告已被修改", time: "04:08", unread: 3 },
-  { id: "n9rtz", name: "N9Rtz", kind: "dm", color: "#3f8f6b", initials: "N", status: "在线 · 已读不回 208 天", preview: "你还在吗？", time: "04:07" },
-  { id: "shio", name: "汐泊诺思", kind: "dm", color: "#b06a9e", initials: "汐", status: "刚刚在线", preview: "今天也是第一次见你。", time: "23:58", unread: 1 },
-  { id: "luvis", name: "LuvisDrug", kind: "ghost", color: "#cfd6de", initials: "L", status: "已注销", statusClass: "dead", preview: "该账号仍在写入", time: "06-02" },
-  { id: "echo-assist", name: "回声小助手", kind: "bot", color: "#8a94a0", initials: "回", status: "刚刚在线", preview: "欢迎使用回声 ECHOS", time: "04:08" },
+  { id: "everyone", name: "全员群", kind: "group", color: "#2f7cf6", initials: "全", avatar: "/avatars/everyone.svg", status: "208 名成员", preview: "群公告已被修改", time: "04:08", unread: 3 },
+  { id: "n9rtz", name: "N9Rtz", kind: "dm", color: "#3f8f6b", initials: "N", avatar: "/avatars/n9rtz.svg", status: "在线 · 已读不回 208 天", preview: "你还在吗？", time: "04:07" },
+  { id: "shio", name: "汐泊诺思", kind: "dm", color: "#b06a9e", initials: "汐", avatar: "/avatars/shio.svg", status: "刚刚在线", preview: "今天也是第一次见你。", time: "23:58", unread: 1 },
+  { id: "luvis", name: "LuvisDrug", kind: "ghost", color: "#cfd6de", initials: "L", avatar: "/avatars/luvis.svg", status: "已注销", statusClass: "dead", preview: "该账号仍在写入", time: "06-02" },
+  { id: "echo-assist", name: "回声小助手", kind: "bot", color: "#8a94a0", initials: "回", avatar: "/avatars/echo-assist.svg", status: "刚刚在线", preview: "欢迎使用回声 ECHOS", time: "04:08" },
 ];
 
 interface Msg {
@@ -180,9 +183,12 @@ function groupMessages(): Msg[] {
   return [
     { id: "g0", from: "system", kind: "warn", text: "群公告已被替换为《连接与断开守则》节选，原公告无法查看。", time: "04:08" },
     { id: "g1", from: "them", name: "汐泊诺思", text: "今天也是第一次见你。", time: "23:58", status: "unread" },
-    { id: "g2", from: "them", name: "路人甲", text: "有人看到新公告吗？我这边打不开了……", time: "04:05" },
-    { id: "g3", from: "them", name: "潜水王", text: "你们不觉得最近群里的时间都不对劲吗", time: "04:06", kind: "abnormal" },
-    { id: "g4", from: "system", kind: "divider", text: "所有消息停留在 04:08。云端同步完成后，这里将不会出现新的内容。" },
+    { id: "g2", from: "them", name: "系统机器人", text: "回声 ECHOS 版本更新预告：本次将优化消息同步稳定性，敬请期待。", time: "04:03" },
+    { id: "g3", from: "them", name: "路人甲", text: "楼下新开的奶茶店第二杯半价，有人拼单吗？", time: "04:04" },
+    { id: "g4", from: "them", name: "潜水王", text: "路过。", time: "04:05" },
+    { id: "g5", from: "them", name: "潜水王", text: "你们不觉得最近群里的时间都不对劲吗", time: "04:06", kind: "abnormal" },
+    { id: "g6", from: "system", kind: "ghost", text: "用户「已注销用户」已退出全员群。", time: "04:07" },
+    { id: "g7", from: "system", kind: "divider", text: "所有消息停留在 04:08。云端同步完成后，这里将不会出现新的内容。" },
   ];
 }
 
@@ -198,7 +204,7 @@ function n9rtzMessages(case01: GameState["case01"]): Msg[] {
         id: "n4",
         from: "them",
         name: "N9Rtz",
-        text: "你终于查到这里了。\n那天我在电话里听到了一切…… 我听你掉下去。\nLuvisDrug 说这个平台有问题，让我别再跟你说话——然后他自己不见了。查他。",
+        text: "你终于查到这里了。我是巴印——你可能不记得了。\n那天我在电话里听到了一切…… 我听你掉下去。\n你说信号断了就去弄路由器，我说别去。茜，我该拉住你的。\nLuvisDrug 说这个平台有问题，让我别再跟你说话——然后他自己不见了。查他。",
         time: "现在",
         kind: "abnormal",
       },
@@ -221,7 +227,8 @@ function shioMessages(case02Done: boolean, case03Done: boolean): Msg[] {
   }
   if (case03Done) {
     msgs.push(
-      { id: "s5", from: "system", kind: "ghost", text: "冷备份破拆后，汐泊诺思账号状态变为「离线（用户主动）」。她没有再发来新的消息。" }
+      { id: "s5", from: "system", kind: "ghost", text: "冷备份破拆后，汐泊诺思账号状态变为「离线（用户主动）」。她没有再发来新的消息。" },
+      { id: "s6", from: "system", kind: "ghost", text: "她的冷备份实名登记显示：王镓铭。208 条「今天也是第一次见你。」的发送者，一直是同一个人——她每晚都在对不认识她的你说这句话。" }
     );
   }
   return msgs;
@@ -404,16 +411,16 @@ const RECORDS: Record<string, GameRecord> = {
     chapter: "case04",
     title: "4·08 坠亡事故通报",
     source: "本地新闻 · 2026-04-09",
-    snippet: "死者：沈零。紧急联系人：汐○。事故时间：04:08。",
+    snippet: "死者：晓茜。紧急联系人：汐○。事故时间：04:08。",
     body: [
-      "2026 年 4 月 8 日凌晨 4 时 08 分，一名男子从高层住宅阳台坠落，当场死亡。",
-      "死者：沈零（草案）。",
+      "2026 年 4 月 8 日凌晨 4 时 08 分，一名女子从高层住宅阳台坠落，当场死亡。",
+      "死者：晓茜。",
       "紧急联系人栏登记为「汐○」，身份待核。",
       "现场勘查显示，死者坠落前曾探身窗外。事故原因仍在调查中。",
     ],
     fields: [
       { k: "事故时间", v: "2026-04-08 04:08" },
-      { k: "死者", v: "沈零" },
+      { k: "死者", v: "晓茜" },
       { k: "紧急联系人", v: "汐○（掩码）" },
       { k: "调查结论", v: "进行中（非司法定论）" },
     ],
@@ -513,7 +520,28 @@ const RECORDS: Record<string, GameRecord> = {
       "我把所有证据整理好，准备发出去。",
       "然后我看到自己的处置记录——创建时间比我发起的「注销申请」早了 3 天。",
       "清除流程是预先存在的。他们早就准备好了我的位置。",
+      "档案上写的是我的实名：李铭泽。他们从一开始就知道我是谁。",
       "有人在等一个不会回复的人。告诉她别等了。",
+    ],
+    require: (g) => g.luvisLogin,
+  },
+  "rec-luvis-audit": {
+    id: "rec-luvis-audit",
+    kind: "注销审计",
+    chapter: "case02",
+    title: "账号注销审计（李铭泽）",
+    source: "回声 ECHOS · 合规审计",
+    snippet: "处置记录创建时间早于注销申请 3 天。处置人：HZ-COMPLIANCE。",
+    body: [
+      "账号 LuvisDrug（实名：李铭泽）的注销审计记录。",
+      "注销申请由本人发起，但处置记录创建时间早于申请时间 3 天。",
+      "清除流程是预先存在的。",
+    ],
+    fields: [
+      { k: "注销申请人", v: "LuvisDrug（实名：李铭泽）" },
+      { k: "申请时间", v: "2026-06-02" },
+      { k: "处置记录创建", v: "2026-05-30（早于申请 3 天）", abnormal: true },
+      { k: "处置人", v: "HZ-COMPLIANCE（系统）" },
     ],
     require: (g) => g.luvisLogin,
   },
@@ -575,6 +603,32 @@ const RECORDS: Record<string, GameRecord> = {
     ],
     require: (g) => g.aka0Confirmed,
   },
+  "rec-plat-notice": {
+    id: "rec-plat-notice",
+    kind: "平台公告",
+    chapter: "meta",
+    title: "例行维护公告",
+    source: "回声 ECHOS · 平台公告",
+    snippet: "本周四 04:00–05:00 例行维护，期间部分聊天记录可能显示异常时间戳。",
+    body: [
+      "为优化服务稳定性，回声 ECHOS 将于本周四 04:00–05:00 进行例行维护。",
+      "维护期间，部分聊天记录可能显示异常时间戳或同步延迟，属正常现象。",
+      "维护完成后，请勿手动核对或修改历史记录。",
+    ],
+  },
+  "rec-express": {
+    id: "rec-express",
+    kind: "系统通知",
+    chapter: "meta",
+    title: "快递驿站取件提醒",
+    source: "回声 ECHOS · 服务通知",
+    snippet: "您的包裹已送达 08 号快递柜，取件码 2613。",
+    body: [
+      "您的包裹已送达 08 号快递柜，请在 48 小时内凭取件码 2613 领取。",
+      "如需改约配送，请回复「改约」并按提示操作。",
+      "本通知与您当前会话无关。",
+    ],
+  },
 };
 
 const SEARCH_INDEX: { terms: string[]; recId: string }[] = [
@@ -584,6 +638,7 @@ const SEARCH_INDEX: { terms: string[]; recId: string }[] = [
   { terms: ["录音", "事故夜", "分轨"], recId: "rec-audio-stems" },
   { terms: ["时间线", "复原", "事件序列"], recId: "rec-timeline" },
   { terms: ["LuvisDrug"], recId: "rec-luvisdrug-profile" },
+  { terms: ["注销审计", "李铭泽"], recId: "rec-luvis-audit" },
   { terms: ["赫兹", "回声网络", "供应商"], recId: "rec-hz-vendor" },
   { terms: ["文化基金", "资金", "财务"], recId: "rec-hz-fund" },
   { terms: ["汐泊诺思"], recId: "rec-shio-profile" },
@@ -592,7 +647,9 @@ const SEARCH_INDEX: { terms: string[]; recId: string }[] = [
   { terms: ["质检", "回访", "客服"], recId: "rec-quality-audit" },
   { terms: ["人工校验", "账号来源"], recId: "rec-identity-check" },
   { terms: ["守则", "用户协议", "连接一致性"], recId: "rec-rules" },
-  { terms: ["事故", "坠亡", "沈零"], recId: "rec-accident" },
+  { terms: ["维护", "公告"], recId: "rec-plat-notice" },
+  { terms: ["快递", "驿站", "取件"], recId: "rec-express" },
+  { terms: ["事故", "坠亡", "晓茜"], recId: "rec-accident" },
 ];
 
 const SURVEILLANCE_TERMS = ["回声小助手", "零信号", "Aka-0"];
@@ -1173,8 +1230,8 @@ function ColdBackup({ done, onSuccess }: { done: boolean; onSuccess: () => void 
                 {farewellPlaying ? "❚❚" : "▶"}
               </button>
               <div className="stem-meta">
-                <b>告别语音（占位素材）</b>
-                <span>8.0s · 轻柔哼唱 · 未发送</span>
+                <b>告别语音（人声）</b>
+                <span>约 11s · 女声 · 未发送</span>
               </div>
               <audio
                 ref={farewellRef}
@@ -1182,6 +1239,10 @@ function ColdBackup({ done, onSuccess }: { done: boolean; onSuccess: () => void 
                 onEnded={() => setFarewellPlaying(false)}
                 preload="none"
               />
+            </div>
+            <div className="backup-note" style={{ marginTop: 8 }}>
+              转写：「如果……有一天你不再上线，我会把歌单听完。我是镓铭。晚安。」<br />
+              录音在 04:06 停止，比事故早两分钟。她没能发出去。
             </div>
 
             <h5 className="backup-title">实名信息</h5>
@@ -1222,7 +1283,7 @@ function ReviewPage({ done, onDone }: { done: boolean; onDone: () => void }) {
   const submit = () => {
     if (done) return;
     const ok =
-      who.trim() === "沈零" && status === "已死亡" && relation.trim() === "紧急联系人";
+      who.trim() === "晓茜" && status === "已死亡" && relation.trim() === "紧急联系人";
     if (ok) {
       setError("");
       onDone();
@@ -1720,7 +1781,7 @@ function CompletionPage({
 }) {
   return (
     <div className="completion-wrap">
-      <h1 className="completion-title">恭喜通关《AkaneRei 已离线》</h1>
+      <h1 className="completion-title">恭喜通关《AkaneRei Offline》</h1>
       <p className="completion-sub">
         好结局：<b>已离线</b> · 档案完成数：{openedCount}/{totalCount}
         {nickname && <> · 昵称：{nickname}</>}
@@ -1748,7 +1809,7 @@ function CompletionPage({
           <div className="appendix-block">
             <h4>创作者说</h4>
             <p>
-              《AkaneRei 已离线》是一封关于连接与告别的情书。感谢你读完 208 条「今天也是第一次见你」，
+              《AkaneRei Offline》是一封关于连接与告别的情书。感谢你读完 208 条「今天也是第一次见你」，
               也感谢你没有在 04:08 之前关掉页面。如果你是汐泊诺思，请把歌单听完；如果你是 AkaneRei，
               请记得：掉线不是终点，被记住才是。
             </p>
@@ -2186,7 +2247,8 @@ export default function Page() {
           onClick={() => goTo({ name: "chat", convId: c.id })}
         >
           <div className={`conv-avatar ${c.kind === "ghost" ? "ghosty" : ""}`} style={c.kind === "ghost" ? undefined : { background: c.color }}>
-            {c.initials}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            {c.avatar ? <img src={assetPath(c.avatar)} alt="" className="conv-avatar-img" /> : c.initials}
           </div>
           <div className="conv-meta">
             <div className="row">
@@ -2219,7 +2281,8 @@ export default function Page() {
       <div className="chat-wrap">
         <div className="chat-header">
           <div className="mini-avatar" style={conv.kind === "ghost" ? { background: "#cfd6de", color: "#7a828c" } : { background: conv.color }}>
-            {conv.initials}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            {conv.avatar ? <img src={assetPath(conv.avatar)} alt="" className="conv-avatar-img" /> : conv.initials}
           </div>
           <div className="info">
             <b>{conv.name}</b>
@@ -2241,7 +2304,8 @@ export default function Page() {
               <div key={m.id} className={`chat-msg ${m.from === "me" ? "me" : "them"}`}>
                 {m.from !== "me" && (
                   <div className="avatar" style={conv.kind === "ghost" ? { background: "#cfd6de", color: "#7a828c" } : { background: conv.color }}>
-                    {conv.initials}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    {conv.avatar ? <img src={assetPath(conv.avatar)} alt="" className="conv-avatar-img" /> : conv.initials}
                   </div>
                 )}
                 <div>
@@ -2411,6 +2475,18 @@ export default function Page() {
             </div>
           );
         })}
+        <div className="archive-section">
+          <h3>其他记录</h3>
+          <div className="archive-items">
+            {byChapter("meta").length === 0 && <div className="archive-empty">（暂无）</div>}
+            {byChapter("meta").map((r) => (
+              <button key={r.id} className="archive-item" onClick={() => goTo({ name: "article", recId: r.id })}>
+                <span className="ai-title">{r.title}</span>
+                <span className="ai-meta">{r.kind}</span>
+              </button>
+            ))}
+          </div>
+        </div>
         <div className="archive-hint">
           提示：打开「通话中断记录」「通话记录」「夜间录音」后，检索「时间线」开始复原事件序列；在「夜间录音」页完成分轨净化。两项完成后 CASE 01 收束。
         </div>

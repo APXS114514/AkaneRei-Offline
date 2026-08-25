@@ -121,30 +121,7 @@ generate("stem-crash.wav", 6.0, (out, n, rng) => {  for (let i = 0; i < n; i++) 
   }
 });
 
-/* ⑤ 汐泊诺思告别语音（占位）：轻柔哼唱式旋律，8s */
-generate("shio-farewell.wav", 8.0, (out, n, rng) => {
-  // 一段缓慢的哼唱旋律：C5-G4-A4-F4-G4-E4（占位音高）
-  const notes = [
-    { start: 0.4, f: 523.25, len: 1.1 },
-    { start: 1.7, f: 392.0, len: 1.2 },
-    { start: 3.1, f: 440.0, len: 1.3 },
-    { start: 4.6, f: 349.23, len: 1.1 },
-    { start: 5.9, f: 392.0, len: 1.2 },
-    { start: 7.2, f: 329.63, len: 0.7 },
-  ];
-  for (let i = 0; i < n; i++) {
-    const t = i / SAMPLE_RATE;
-    let v = (rng() * 2 - 1) * 0.02;
-    for (const note of notes) {
-      const dt = t - note.start;
-      if (dt >= 0 && dt < note.len) {
-        const env = Math.sin((Math.PI * dt) / note.len); // 起落包络
-        const vibrato = 1 + 0.008 * Math.sin(2 * Math.PI * 5.5 * t);
-        v += Math.sin(2 * Math.PI * note.f * vibrato * dt) * env * 0.16;
-      }
-    }
-    out[i] = v;
-  }
-});
+// ⑤ 汐泊诺思告别语音：已由 Windows 中文语音（Microsoft Huihui）合成，
+//   见 public/audio/STEM_SOURCES.md。不要用占位哼唱覆盖该文件。
 
 console.log("完成。来源与替换计划见 public/audio/STEM_SOURCES.md。");

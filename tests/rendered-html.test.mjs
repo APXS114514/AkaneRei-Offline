@@ -103,6 +103,30 @@ test("CASE 03 playlist and cold backup exist with locked password", async () => 
   assert.match(page, /实名.*巴印/);
   assert.match(page, /实名.*李铭泽/);
   assert.match(page, /王镓铭/);
+  // 新内容：头像、噪音、干扰档案、告别转写、戏份深化
+  assert.match(page, /avatars\/n9rtz\.svg/);
+  assert.match(page, /avatars\/shio\.svg/);
+  assert.match(page, /奶茶店第二杯半价/);
+  assert.match(page, /例行维护公告/);
+  assert.match(page, /取件码 2613/);
+  assert.match(page, /我是巴印/);
+  assert.match(page, /茜，我该拉住你的/);
+  assert.match(page, /账号注销审计（李铭泽）/);
+  assert.match(page, /HZ-COMPLIANCE/);
+  assert.match(page, /我是镓铭/);
+  assert.match(page, /她每晚都在对不认识她的你说这句话/);
+});
+
+test("cover image and avatars are shipped in public assets", async () => {
+  const fs = await import("node:fs/promises");
+  const layout = await fs.readFile(new URL("../app/layout.tsx", import.meta.url), "utf8");
+  assert.match(layout, /cover\.png/);
+  const cover = await fs.stat(new URL("../public/cover.png", import.meta.url));
+  assert.ok(cover.size > 10000);
+  const avatars = await fs.readdir(new URL("../public/avatars", import.meta.url));
+  for (const name of ["n9rtz.svg", "shio.svg", "luvis.svg", "echo-assist.svg", "everyone.svg"]) {
+    assert.ok(avatars.includes(name), `missing avatar ${name}`);
+  }
 });
 
 test("CASE 04 identity check, memory block and endings exist", async () => {
@@ -112,7 +136,7 @@ test("CASE 04 identity check, memory block and endings exist", async () => {
 
   // 隐藏复核页三项结论
   assert.match(page, /Aka-0 是谁？/);
-  assert.match(page, /沈零/);
+  assert.match(page, /晓茜/);
   assert.match(page, /紧急联系人/);
   // 身份核对原始字段
   assert.match(page, /事故时间戳/);
@@ -138,7 +162,7 @@ test("completion page and signal game exist", async () => {
   assert.match(page, /SIGNAL_OBSTACLE_COUNT = 14/);
   assert.match(page, /保持信号/);
   assert.match(page, /04:09 · 信号恢复/);
-  assert.match(page, /恭喜通关《AkaneRei 已离线》/);
+  assert.match(page, /恭喜通关《AkaneRei Offline》/);
   assert.match(page, /最初的故事原稿/);
   assert.match(page, /创作者说/);
   assert.match(page, /#\/app\/completion/);
