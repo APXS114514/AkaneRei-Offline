@@ -48,3 +48,4 @@ next-env.d.ts
 # local tooling
 /.npm-cache/
 /.visual-check/
+/更新部署.ps1
