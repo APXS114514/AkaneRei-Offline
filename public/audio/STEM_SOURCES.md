@@ -23,6 +23,24 @@
 - 合成命令：`System.Speech.Synthesis`（PowerShell）。
 - **注意**：`npm run audio:generate` 不会再覆盖此文件（脚本已移除占位哼唱生成）。
 
+## 告别语音（真实人声合成）
+
+`shio-farewell.wav` 由 Windows 中文语音 **Microsoft Huihui（zh-CN，女声）** 合成，
+内容为汐泊诺思（王镓铭）未发出的告别：
+
+> 「如果……有一天你不再上线，我会把歌单听完。我是镓铭。晚安。」
+
+- 采样率 22050 Hz，16-bit 单声道，约 10.9 秒，语速 -2。
+- 合成命令：`System.Speech.Synthesis`（PowerShell）。
+- **注意**：`npm run audio:generate` 不会再覆盖此文件（脚本已移除占位哼唱生成）。
+
+## 氛围曲（占位合成）
+
+`background-suspense.wav`（悬疑，Countdown 风格）与 `background-horror.wav`（惊悚，Lights 风格）
+由 `scripts/generate-stems.mjs` 程序化合成（36s 循环），作为 BGM 分层的占位素材。
+正式版本可替换为 CC0 授权曲目（参考项目使用 Alexander Nakarada 与 Rafael Krux 的 CC BY 4.0 曲目），
+替换后保持文件名一致。
+
 ## 替换计划
 
 正式版本可改用 CC0 实录/专业配音素材（镜像参考项目 `FIELD_RECORDINGS.md` 的做法），

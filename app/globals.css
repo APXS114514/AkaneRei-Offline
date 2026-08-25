@@ -94,6 +94,8 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .app-topbar .sub { color: var(--muted); font-size: 12px; }
 .app-content { flex: 1; overflow: auto; }
 .app-account { margin-top: auto; padding: 12px 14px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); }
+.music-toggle { border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 6px 10px; margin-top: 8px; cursor: pointer; font-size: 12px; color: var(--muted); width: 100%; }
+.music-toggle:hover { border-color: var(--accent); color: var(--accent); }
 
 /* ---------- 会话列表 ---------- */
 .conv-list { padding: 8px; }

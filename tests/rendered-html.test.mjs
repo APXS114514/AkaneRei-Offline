@@ -1,5 +1,16 @@
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
+
+/** 合并读取游戏源码（page + game 模块），供内容契约断言 */
+async function readGameSource() {
+  const files = ["app/page.tsx", "app/game/types.ts", "app/game/data.ts", "app/game/components.tsx"];
+  const parts = [];
+  for (const f of files) {
+    parts.push(await readFile(new URL(`../${f}`, import.meta.url), "utf8"));
+  }
+  return parts.join("\n");
+}
 
 async function render(pathname = "/") {
   const workerUrl = new URL("../dist/server/index.js", import.meta.url);
@@ -36,9 +47,7 @@ test("server-renders the ECHOS ARG opening performance", async () => {
 });
 
 test("login screen exposes the ECHOS surface with locked credentials flow", async () => {
-  const page = await import("node:fs/promises").then((fs) =>
-    fs.readFile(new URL("../app/page.tsx", import.meta.url), "utf8")
-  );
+  const page = await readGameSource();
 
   assert.match(page, /AkaneRei/);
   assert.match(page, /0408/);
@@ -52,9 +61,7 @@ test("login screen exposes the ECHOS surface with locked credentials flow", asyn
 });
 
 test("CASE 01 puzzles exist with locked answers", async () => {
-  const page = await import("node:fs/promises").then((fs) =>
-    fs.readFile(new URL("../app/page.tsx", import.meta.url), "utf8")
-  );
+  const page = await readGameSource();
 
   // 时间线复原：五个正确事件按 03:00→04:09 排序
   assert.match(page, /TIMELINE_ANSWER = \["t-0300", "t-0406", "t-0407", "t-0408", "t-0409"\]/);
@@ -66,9 +73,7 @@ test("CASE 01 puzzles exist with locked answers", async () => {
 });
 
 test("CASE 02 legacy account, notes and breach exist", async () => {
-  const page = await import("node:fs/promises").then((fs) =>
-    fs.readFile(new URL("../app/page.tsx", import.meta.url), "utf8")
-  );
+  const page = await readGameSource();
 
   // 残留账号密码契约：波形 97.0 HZ + 摩斯 LOOP + 账号 ID
   assert.match(page, /LEGACY_PASSWORD = "hzloopluvisdrug"/);
@@ -86,9 +91,7 @@ test("CASE 02 legacy account, notes and breach exist", async () => {
 });
 
 test("CASE 03 playlist and cold backup exist with locked password", async () => {
-  const page = await import("node:fs/promises").then((fs) =>
-    fs.readFile(new URL("../app/page.tsx", import.meta.url), "utf8")
-  );
+  const page = await readGameSource();
 
   assert.match(page, /COLD_BACKUP_PASSWORD = "XIBONUOSI"/);
   assert.match(page, /汐泊与零的歌单/);
@@ -109,6 +112,13 @@ test("CASE 03 playlist and cold backup exist with locked password", async () => 
   assert.match(page, /奶茶店第二杯半价/);
   assert.match(page, /例行维护公告/);
   assert.match(page, /取件码 2613/);
+  // 噪音成员实名（干扰项）
+  assert.match(page, /APXS/);
+  assert.match(page, /刘睿航/);
+  assert.match(page, /Rtwyzz/);
+  assert.match(page, /李磊/);
+  assert.match(page, /Roy/);
+  assert.match(page, /张贤德/);
   assert.match(page, /我是巴印/);
   assert.match(page, /茜，我该拉住你的/);
   assert.match(page, /账号注销审计（李铭泽）/);
@@ -118,21 +128,22 @@ test("CASE 03 playlist and cold backup exist with locked password", async () => 
 });
 
 test("cover image and avatars are shipped in public assets", async () => {
-  const fs = await import("node:fs/promises");
-  const layout = await fs.readFile(new URL("../app/layout.tsx", import.meta.url), "utf8");
+  const layout = await readFile(new URL("../app/layout.tsx", import.meta.url), "utf8");
   assert.match(layout, /cover\.png/);
-  const cover = await fs.stat(new URL("../public/cover.png", import.meta.url));
+  const cover = await import("node:fs/promises").then((fs) =>
+    fs.stat(new URL("../public/cover.png", import.meta.url))
+  );
   assert.ok(cover.size > 10000);
-  const avatars = await fs.readdir(new URL("../public/avatars", import.meta.url));
+  const avatars = await import("node:fs/promises").then((fs) =>
+    fs.readdir(new URL("../public/avatars", import.meta.url))
+  );
   for (const name of ["n9rtz.svg", "shio.svg", "luvis.svg", "echo-assist.svg", "everyone.svg"]) {
     assert.ok(avatars.includes(name), `missing avatar ${name}`);
   }
 });
 
 test("CASE 04 identity check, memory block and endings exist", async () => {
-  const page = await import("node:fs/promises").then((fs) =>
-    fs.readFile(new URL("../app/page.tsx", import.meta.url), "utf8")
-  );
+  const page = await readGameSource();
 
   // 隐藏复核页三项结论
   assert.match(page, /Aka-0 是谁？/);
@@ -155,9 +166,7 @@ test("CASE 04 identity check, memory block and endings exist", async () => {
 });
 
 test("completion page and signal game exist", async () => {
-  const page = await import("node:fs/promises").then((fs) =>
-    fs.readFile(new URL("../app/page.tsx", import.meta.url), "utf8")
-  );
+  const page = await readGameSource();
 
   assert.match(page, /SIGNAL_OBSTACLE_COUNT = 14/);
   assert.match(page, /保持信号/);
@@ -166,6 +175,11 @@ test("completion page and signal game exist", async () => {
   assert.match(page, /最初的故事原稿/);
   assert.match(page, /创作者说/);
   assert.match(page, /#\/app\/completion/);
+  // 音频分层
+  assert.match(page, /AudioLayer/);
+  assert.match(page, /background-suspense\.wav/);
+  assert.match(page, /background-horror\.wav/);
+  assert.match(page, /bgmMuted/);
 });
 
 test("truth page is a separate static route with spoiler warning", async () => {
