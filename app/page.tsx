@@ -978,9 +978,17 @@ export default function Page() {
       break;
   }
 
+  const routeKey =
+    route.name +
+    (route.name === "chat" ? `-${route.convId}` : "") +
+    (route.name === "article" ? `-${route.recId}` : "") +
+    (route.name === "surveillance" ? `-${route.source}` : "");
+
   return (
     <>
-      {body}
+      <div className="route-view" key={routeKey}>
+        {body}
+      </div>
       <AudioLayer game={game} />
     </>
   );

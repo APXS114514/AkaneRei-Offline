@@ -1,41 +1,75 @@
-/* 回声 ECHOS —— 一款看起来像真的聊天软件。恐怖藏在时间戳与已读回执里。 */
+/* 回声 ECHOS —— 一款看起来像真的聊天软件（macOS 风格表面）。恐怖藏在时间戳与已读回执里。 */
 
 :root {
-  --app-bg: #eef1f4;
+  --app-bg: #ececf0;
   --panel: #ffffff;
-  --ink: #1f2328;
-  --muted: #7a828c;
-  --faint: #a8afb8;
-  --line: #e3e7ec;
-  --accent: #2f7cf6;
-  --accent-soft: #eaf1ff;
-  --bubble-me: #2f7cf6;
-  --bubble-them: #f1f3f6;
-  --danger: #b03a3a;
-  --danger-soft: #fbeaea;
-  --ghost: #5b6672;
+  --ink: #1d1d1f;
+  --muted: #6e6e73;
+  --faint: #aeaeb2;
+  --line: #e3e3e8;
+  --line-strong: #d1d1d6;
+  --accent: #007aff;
+  --accent-deep: #0060df;
+  --accent-soft: rgba(0,122,255,.1);
+  --bubble-me: #007aff;
+  --bubble-them: #f2f2f7;
+  --danger: #ff3b30;
+  --danger-soft: #ffe9e7;
+  --danger-deep: #c73027;
+  --ghost: #5b5b62;
+  --fill: #f2f2f7;            /* macOS 次级填充 */
+  --sidebar: rgba(246,246,250,.72);
+  --bar: rgba(255,255,255,.62);
   --mono: "SFMono-Regular", "Consolas", "Menlo", monospace;
-  --sans: -apple-system, "Segoe UI", "Microsoft YaHei", "Noto Sans SC", system-ui, sans-serif;
+  --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --ease-mac: cubic-bezier(.4, 0, .2, 1);
 }
 
 * { box-sizing: border-box; }
-html { background: var(--app-bg); }
-body { margin: 0; color: var(--ink); background: linear-gradient(180deg, #eef1f4 0%, #e7ecf2 100%); background-attachment: fixed; font-family: var(--sans); }
+html { background: #0f1220; }
+body {
+  margin: 0; color: var(--ink); font-family: var(--sans); -webkit-font-smoothing: antialiased;
+  background:
+    radial-gradient(1200px 700px at 82% -10%, rgba(94,104,255,.35) 0%, transparent 55%),
+    radial-gradient(1000px 600px at 8% 110%, rgba(172,60,220,.28) 0%, transparent 55%),
+    linear-gradient(165deg, #141a33 0%, #1b1f3a 40%, #241f3d 100%);
+  background-attachment: fixed;
+}
 button, input, select, textarea { font: inherit; }
 button { color: inherit; }
-button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid rgba(47,124,246,.28); outline-offset: 2px; }
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 3px solid rgba(0,122,255,.35); outline-offset: 2px; }
 
-/* ---------- 通用控件 ---------- */
-.primary-button { min-height: 42px; border: 0; border-radius: 9px; padding: 0 18px; background: linear-gradient(180deg, #3d86f7, #2a6fe0); color: #fff; cursor: pointer; font-weight: 600; box-shadow: 0 2px 8px rgba(47,124,246,.25); transition: filter .15s ease, transform .05s ease; }
-.primary-button:hover { filter: brightness(1.07); }
-.primary-button:active { transform: translateY(1px); }
-.text-button { border: 0; background: transparent; color: var(--accent); cursor: pointer; padding: 8px; }
-.primary-button:disabled, .text-button:disabled { cursor: wait; opacity: .6; }
-.danger-button { background: linear-gradient(180deg, #c34848, #a53131); box-shadow: 0 2px 8px rgba(176,58,58,.25); }
-.danger-button:hover { background: linear-gradient(180deg, #c34848, #a53131); }
-.input-field { min-height: 40px; border: 1px solid var(--line); border-radius: 9px; padding: 0 12px; background: #fff; transition: border-color .15s ease, box-shadow .15s ease; }
-.input-field:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 3px rgba(47,124,246,.14); }
-.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
+/* macOS 细滚动条 */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,.22); border-radius: 99px; border: 3px solid transparent; background-clip: content-box; }
+::-webkit-scrollbar-thumb:hover { background-color: rgba(0,0,0,.34); }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* ---------- 通用控件（macOS 风） ---------- */
+.primary-button {
+  min-height: 40px; border: 0; border-radius: 8px; padding: 0 20px;
+  background: linear-gradient(180deg, #0a84ff 0%, #0066e8 100%);
+  color: #fff; cursor: pointer; font-weight: 500; letter-spacing: .01em;
+  box-shadow: 0 1px 3px rgba(0,88,208,.35), inset 0 1px 0 rgba(255,255,255,.22);
+  transition: filter .12s var(--ease-mac), transform .06s ease;
+}
+.primary-button:hover { filter: brightness(1.08); }
+.primary-button:active { transform: translateY(1px) scale(.985); filter: brightness(.96); }
+.text-button { border: 0; background: transparent; color: var(--accent); cursor: pointer; padding: 8px; border-radius: 6px; }
+.text-button:hover { background: var(--accent-soft); }
+.primary-button:disabled, .text-button:disabled { cursor: wait; opacity: .5; }
+.danger-button { background: linear-gradient(180deg, #ff453a 0%, #e03328 100%); box-shadow: 0 1px 3px rgba(200,45,32,.4), inset 0 1px 0 rgba(255,255,255,.2); }
+.danger-button:hover { filter: brightness(1.05); }
+.input-field {
+  min-height: 40px; border: 1px solid transparent; border-radius: 8px; padding: 0 12px;
+  background: var(--fill); color: var(--ink);
+  transition: background .15s var(--ease-mac), box-shadow .15s var(--ease-mac), border-color .15s var(--ease-mac);
+}
+.input-field::placeholder { color: var(--faint); }
+.input-field:hover { background: #e9e9ee; }
+.input-field:focus { background: #fff; border-color: var(--accent); outline: none; box-shadow: 0 0 0 3.5px rgba(0,122,255,.22); }
+select.input-field { cursor: pointer; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 10px 30px rgba(0,0,0,.05); }
 
 /* ---------- 开场演出 ---------- */
 .opening { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px; gap: 28px; background: linear-gradient(180deg, #10161d 0%, #1b232c 100%); color: #d9dee5; }
@@ -55,15 +89,32 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .opening-skip { border: 0; background: transparent; color: #6f7c8a; cursor: pointer; font-size: 13px; padding: 8px; }
 .opening-skip:hover { color: #c4ccd5; }
 
-/* ---------- 登录 ---------- */
-.login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: radial-gradient(900px 500px at 50% 20%, #dfe7f0 0%, #e3e9ef 55%, #dbe2ea 100%); }
-.login-card { width: min(380px, 92vw); padding: 32px 28px; box-shadow: 0 18px 50px rgba(28,40,54,.14); border-top: 3px solid var(--accent); }
-.login-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
-.login-logo .logo-mark { width: 40px; height: 40px; border-radius: 11px; background: linear-gradient(180deg, #3d86f7, #2a6fe0); display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 18px; box-shadow: 0 3px 10px rgba(47,124,246,.3); }
-.login-logo h1 { margin: 0; font-size: 20px; }
-.login-sub { color: var(--muted); font-size: 13px; margin: 4px 0 22px; }
+/* ---------- 登录（macOS 窗口） ---------- */
+.login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.login-card {
+  width: min(380px, 92vw); padding: 36px 30px 30px; position: relative;
+  border-radius: 12px; border: 1px solid rgba(255,255,255,.1);
+  background: var(--sidebar);
+  backdrop-filter: blur(28px) saturate(1.9); -webkit-backdrop-filter: blur(28px) saturate(1.9);
+  box-shadow: 0 0 0 .5px rgba(0,0,0,.4), 0 30px 80px rgba(0,0,0,.55);
+}
+/* 交通灯 */
+.login-card::before {
+  content: ""; position: absolute; left: 20px; top: 18px;
+  width: 52px; height: 14px;
+  background:
+    radial-gradient(circle at 7px 7px, #ff5f57 0 6.5px, #ff5f57 6.5px),
+    radial-gradient(circle at 26px 7px, #febc2e 0 6.5px, #febc2e 6.5px),
+    radial-gradient(circle at 45px 7px, #28c840 0 6.5px, #28c840 6.5px);
+  background-size: 14px 14px; background-repeat: no-repeat; background-position: 0 0, 19px 0, 38px 0;
+  opacity: .92;
+}
+.login-logo { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
+.login-logo .logo-mark { width: 42px; height: 42px; border-radius: 12px; background: linear-gradient(180deg, #0a84ff, #0066e8); display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 19px; box-shadow: 0 4px 12px rgba(0,110,230,.4); }
+.login-logo h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -.02em; }
+.login-sub { color: var(--muted); font-size: 13px; margin: 4px 0 24px; }
 .login-field { margin-bottom: 14px; }
-.login-field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; }
+.login-field label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; font-weight: 500; }
 .login-field input { width: 100%; }
 .login-error { color: var(--danger); font-size: 13px; min-height: 20px; margin: 8px 0 4px; }
 .login-forget { margin-top: 18px; text-align: center; }
@@ -76,66 +127,106 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   75% { filter: sepia(1) hue-rotate(-40deg); }
 }
 
-/* ---------- 应用框架 ---------- */
-.app-shell { display: flex; height: 100vh; overflow: hidden; }
-.app-sidebar { width: 250px; flex: none; background: #fbfcfd; border-right: 1px solid var(--line); display: flex; flex-direction: column; }
-.app-brand { display: flex; align-items: center; gap: 9px; padding: 16px 16px 12px; }
-.app-brand .logo-mark { width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(180deg, #3d86f7, #2a6fe0); display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 14px; box-shadow: 0 2px 8px rgba(47,124,246,.3); animation: logo-pulse 4s ease-in-out infinite; }
-@keyframes logo-pulse { 0%, 100% { box-shadow: 0 2px 8px rgba(47,124,246,.3); } 50% { box-shadow: 0 2px 14px rgba(47,124,246,.55); } }
-.app-brand h1 { margin: 0; font-size: 16px; }
+/* ---------- 应用框架（macOS 窗口） ---------- */
+.app-shell {
+  display: flex; height: calc(100vh - 40px); margin: 20px; overflow: hidden;
+  border-radius: 12px; border: 1px solid rgba(255,255,255,.1);
+  background: var(--panel);
+  box-shadow: 0 0 0 .5px rgba(0,0,0,.4), 0 30px 80px rgba(0,0,0,.55), 0 8px 24px rgba(0,0,0,.4);
+}
+.app-sidebar {
+  width: 250px; flex: none; position: relative;
+  background: var(--sidebar);
+  backdrop-filter: blur(28px) saturate(1.9); -webkit-backdrop-filter: blur(28px) saturate(1.9);
+  border-right: 1px solid var(--line);
+  display: flex; flex-direction: column;
+}
+/* macOS 交通灯：窗口左上角（Finder/Notes 风格，横跨侧栏） */
+.app-sidebar::before {
+  content: ""; position: absolute; left: 18px; top: 16px; z-index: 2;
+  width: 52px; height: 14px;
+  background:
+    radial-gradient(circle at 7px 7px, #ff5f57 0 6.5px, #ff5f57 6.5px),
+    radial-gradient(circle at 26px 7px, #febc2e 0 6.5px, #febc2e 6.5px),
+    radial-gradient(circle at 45px 7px, #28c840 0 6.5px, #28c840 6.5px);
+  background-size: 14px 14px; background-repeat: no-repeat; background-position: 0 0, 19px 0, 38px 0;
+  opacity: .92;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,.15));
+}
+.app-brand { display: flex; align-items: center; gap: 9px; padding: 42px 16px 10px; }
+.app-brand .logo-mark { width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(180deg, #0a84ff, #0066e8); display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 14px; box-shadow: 0 2px 8px rgba(0,110,230,.35); animation: logo-pulse 4s ease-in-out infinite; }
+@keyframes logo-pulse { 0%, 100% { box-shadow: 0 2px 8px rgba(0,110,230,.35); } 50% { box-shadow: 0 2px 16px rgba(0,122,255,.6); } }
+.app-brand h1 { margin: 0; font-size: 15px; font-weight: 600; letter-spacing: -.01em; }
 .app-nav { display: flex; flex-direction: column; padding: 6px 10px; gap: 2px; }
-.app-nav button { text-align: left; border: 0; background: transparent; border-radius: 9px; padding: 10px 12px; cursor: pointer; font-size: 14px; color: var(--ink); display: flex; align-items: center; gap: 10px; transition: background .12s ease; }
-.app-nav button:hover { background: #eef1f5; }
-.app-nav button.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; box-shadow: inset 3px 0 0 var(--accent); }
+.app-nav button { text-align: left; border: 0; background: transparent; border-radius: 7px; padding: 8px 10px; cursor: pointer; font-size: 13.5px; color: var(--ink); display: flex; align-items: center; gap: 10px; transition: background .12s var(--ease-mac); }
+.app-nav button:hover { background: rgba(0,0,0,.055); }
+.app-nav button.active { background: var(--accent); color: #fff; font-weight: 500; box-shadow: 0 1px 3px rgba(0,88,208,.3); }
 .app-nav .nav-icon { width: 20px; text-align: center; }
 .app-main { flex: 1; min-width: 0; display: flex; flex-direction: column; background: var(--panel); }
-.app-topbar { height: 54px; flex: none; display: flex; align-items: center; gap: 12px; padding: 0 18px; border-bottom: 1px solid var(--line); background: rgba(255,255,255,.82); backdrop-filter: blur(6px); }
-.app-topbar h2 { margin: 0; font-size: 16px; }
+.app-topbar {
+  height: 52px; flex: none; display: flex; align-items: center; gap: 10px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--line);
+  background: var(--bar); backdrop-filter: blur(22px) saturate(1.8); -webkit-backdrop-filter: blur(22px) saturate(1.8);
+}
+.app-topbar h2 { margin: 0; font-size: 14px; font-weight: 600; }
 .app-topbar .sub { color: var(--muted); font-size: 12px; }
 .app-content { flex: 1; overflow: auto; }
 .app-account { margin-top: auto; padding: 12px 14px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); }
-.music-toggle { border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 6px 10px; margin-top: 8px; cursor: pointer; font-size: 12px; color: var(--muted); width: 100%; }
-.music-toggle:hover { border-color: var(--accent); color: var(--accent); }
+.music-toggle { border: 1px solid var(--line-strong); background: var(--fill); border-radius: 7px; padding: 6px 10px; margin-top: 8px; cursor: pointer; font-size: 12px; color: var(--muted); width: 100%; transition: background .12s var(--ease-mac); }
+.music-toggle:hover { background: #e8e8ed; color: var(--ink); }
 
 /* ---------- 会话列表 ---------- */
 .conv-list { padding: 8px; }
-.conv-item { display: flex; gap: 12px; align-items: center; width: 100%; border: 0; background: transparent; border-radius: 11px; padding: 11px 10px; cursor: pointer; text-align: left; transition: background .12s ease, box-shadow .12s ease; }
-.conv-item:hover { background: #fff; box-shadow: 0 2px 10px rgba(28,40,54,.08); }
-.conv-item.active { background: var(--accent-soft); box-shadow: inset 3px 0 0 var(--accent); }
-.conv-avatar { width: 44px; height: 44px; flex: none; border-radius: 12px; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 16px; overflow: hidden; }
+.conv-item { display: flex; gap: 12px; align-items: center; width: 100%; border: 0; background: transparent; border-radius: 9px; padding: 9px 10px; cursor: pointer; text-align: left; transition: background .12s var(--ease-mac); }
+.conv-item:hover { background: rgba(0,0,0,.05); }
+.conv-item.active { background: var(--accent); }
+.conv-item.active .conv-meta .name,
+.conv-item.active .conv-meta .time,
+.conv-item.active .conv-meta .preview,
+.conv-item.active .conv-meta .preview .unread { color: #fff; }
+.conv-item.active .status-tag { background: rgba(255,255,255,.22); border-color: transparent; color: #fff; }
+.conv-item.active .status-tag.dead { background: rgba(255,255,255,.22); border-color: transparent; color: #fff; }
+.conv-item.active .conv-badge { background: #fff; color: var(--accent); }
+.conv-avatar { width: 44px; height: 44px; flex: none; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 16px; overflow: hidden; box-shadow: inset 0 0 0 .5px rgba(0,0,0,.12); }
 .conv-avatar-img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.conv-avatar.ghosty { background: #cfd6de; color: #7a828c; }
+.conv-avatar.ghosty { background: #d8d8de; color: #8a8a90; }
 .conv-meta { flex: 1; min-width: 0; }
 .conv-meta .row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
-.conv-meta .name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.conv-meta .name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -.01em; }
 .conv-meta .time { font-size: 11px; color: var(--muted); }
 .conv-meta .preview { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 3px; }
-.conv-meta .preview .unread { color: var(--accent); font-weight: 600; }
-.conv-badge { min-width: 20px; height: 20px; border-radius: 10px; background: var(--danger); color: #fff; font-size: 11px; display: grid; place-items: center; padding: 0 6px; }
-.conv-item .status-tag { font-size: 10px; color: var(--muted); border: 1px solid var(--line); border-radius: 99px; padding: 2px 8px; background: #fff; }
-.conv-item .status-tag.dead { color: var(--danger); border-color: rgba(176,58,58,.35); background: var(--danger-soft); }
-.conv-section { padding: 14px 12px 4px; font-size: 11px; color: var(--faint); letter-spacing: .08em; }
+.conv-meta .preview .unread { color: var(--accent); font-weight: 500; }
+.conv-badge { min-width: 20px; height: 20px; border-radius: 10px; background: var(--danger); color: #fff; font-size: 11px; display: grid; place-items: center; padding: 0 6px; font-weight: 500; }
+.conv-item .status-tag { font-size: 10px; color: var(--muted); border: 1px solid var(--line); border-radius: 99px; padding: 2px 8px; background: var(--fill); }
+.conv-item .status-tag.dead { color: var(--danger); border-color: rgba(255,59,48,.3); background: var(--danger-soft); }
+.conv-section { padding: 14px 12px 4px; font-size: 11px; color: var(--faint); letter-spacing: .08em; text-transform: uppercase; font-weight: 500; }
 
 /* ---------- 聊天窗口 ---------- */
 .chat-wrap { display: flex; flex-direction: column; height: 100%; }
-.chat-header { flex: none; padding: 12px 18px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 10px; }
-.chat-header .mini-avatar { width: 32px; height: 32px; border-radius: 9px; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 13px; overflow: hidden; }
-.chat-header .info b { display: block; font-size: 14px; }
+.chat-header {
+  flex: none; padding: 12px 18px;
+  border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 10px;
+  background: var(--bar); backdrop-filter: blur(22px) saturate(1.8); -webkit-backdrop-filter: blur(22px) saturate(1.8);
+}
+.chat-header .mini-avatar { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 13px; overflow: hidden; box-shadow: inset 0 0 0 .5px rgba(0,0,0,.12); }
+.chat-header .info b { display: block; font-size: 14px; font-weight: 600; letter-spacing: -.01em; }
 .chat-header .info span { font-size: 11px; color: var(--muted); }
-.chat-body { flex: 1; overflow: auto; padding: 18px 16px; display: flex; flex-direction: column; gap: 10px; }
-.chat-date { align-self: center; font-size: 11px; color: var(--faint); background: var(--app-bg); border-radius: 99px; padding: 4px 12px; }
-.chat-divider { align-self: stretch; text-align: center; font-size: 11px; color: var(--danger); border-top: 1px dashed rgba(176,58,58,.4); padding-top: 12px; margin-top: 8px; line-height: 1.7; }
-.chat-msg { display: flex; gap: 8px; max-width: 76%; }
+.chat-body { flex: 1; overflow: auto; padding: 18px 18px; display: flex; flex-direction: column; gap: 10px; }
+.chat-date { align-self: center; font-size: 11px; color: var(--faint); background: var(--fill); border-radius: 99px; padding: 4px 12px; }
+.chat-divider { align-self: stretch; text-align: center; font-size: 11px; color: var(--danger); border-top: 1px dashed rgba(255,59,48,.4); padding-top: 12px; margin-top: 8px; line-height: 1.7; }
+.chat-msg { display: flex; gap: 8px; max-width: 78%; animation: msg-in .18s var(--ease-mac) both; }
 .chat-msg.me { align-self: flex-end; flex-direction: row-reverse; }
-.chat-msg .avatar { width: 30px; height: 30px; flex: none; border-radius: 9px; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 12px; overflow: hidden; }
-.chat-msg .bubble { border-radius: 13px; padding: 9px 12px; font-size: 14px; line-height: 1.6; white-space: pre-wrap; word-break: break-word; box-shadow: 0 1px 3px rgba(28,40,54,.06); }
-.chat-msg.them .bubble { background: #fff; border: 1px solid #e8ecf1; border-top-left-radius: 3px; }
-.chat-msg.me .bubble { background: linear-gradient(180deg, #3d86f7, #2a6fe0); color: #fff; border-top-right-radius: 3px; box-shadow: 0 2px 8px rgba(47,124,246,.25); }
+.chat-msg .avatar { width: 30px; height: 30px; flex: none; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 12px; overflow: hidden; box-shadow: inset 0 0 0 .5px rgba(0,0,0,.12); }
+.chat-msg .bubble { border-radius: 18px; padding: 9px 14px; font-size: 14px; line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
+.chat-msg.them .bubble { background: var(--bubble-them); border-top-left-radius: 5px; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+.chat-msg.me .bubble { background: linear-gradient(180deg, #0a84ff 0%, #0066e8 100%); color: #fff; border-top-right-radius: 5px; box-shadow: 0 2px 8px rgba(0,100,220,.3); }
 .chat-msg .bubble .sender { display: block; font-size: 11px; color: var(--muted); margin-bottom: 3px; }
-.chat-msg .bubble .sender.me { color: rgba(255,255,255,.75); }
+.chat-msg .bubble .sender.me { color: rgba(255,255,255,.8); }
 .chat-msg .meta-line { display: flex; gap: 6px; align-items: center; margin-top: 3px; font-size: 10px; }
 .chat-msg.me .meta-line { justify-content: flex-end; }
 .chat-msg .meta-line .time { color: var(--faint); }
+@keyframes msg-in { from { opacity: 0; transform: translateY(5px) scale(.985); } to { opacity: 1; transform: none; } }
 .chat-msg .meta-line .status { color: var(--accent); }
 .chat-msg .meta-line .status.unread { color: var(--faint); }
 .chat-msg .bubble.abnormal { border: 1px solid rgba(176,58,58,.45); }
@@ -360,13 +451,33 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .truth-page p { color: #aab4bf; }
 .truth-page .truth-warn { border: 1px solid rgba(176,58,58,.5); border-radius: 10px; padding: 12px 16px; color: #e0a9a5; background: rgba(176,58,58,.08); margin-bottom: 26px; }
 
-/* ---------- 响应式 ---------- */
+/* ---------- 路由切换动画（macOS 淡入缩放） ---------- */
+.route-view { animation: route-in .22s var(--ease-mac) both; min-height: 100vh; }
+@keyframes route-in {
+  from { opacity: 0; transform: scale(.985) translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+.route-view .app-shell { animation: window-in .28s var(--ease-mac) both; }
+@keyframes window-in {
+  from { opacity: 0; transform: translateY(10px) scale(.985); }
+  to { opacity: 1; transform: none; }
+}
+
+/* ---------- 响应式（macOS 窗口在窄屏铺满） ---------- */
 @media (max-width: 700px) {
+  .app-shell { height: 100vh; margin: 0; border-radius: 0; border: 0; }
   .app-sidebar { width: 76px; }
+  .app-sidebar::before { display: none; }
+  .app-brand { padding-top: 14px; }
   .app-brand h1, .app-nav button span.nav-label, .app-account { display: none; }
   .app-nav button { justify-content: center; padding: 12px; }
   .chat-msg { max-width: 88%; }
 }
 @media (max-width: 420px) {
   .app-content { padding-bottom: 8px; }
+}
+
+/* ---------- 减少动态效果 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .route-view, .route-view .app-shell, .chat-msg, .app-brand .logo-mark, .login-flash { animation: none !important; transition: none !important; }
 }
