@@ -292,6 +292,7 @@ export default function Page() {
   const renderLogin = () => (
     <div className={`login-screen ${loginFlash ? "login-flash" : ""}`}>
       <div className="login-card card">
+        <div className="traffic-lights" aria-hidden="true"><i /><i /><i /></div>
         <div className="login-logo">
           <div className="logo-mark">E</div>
           <h1>回声 ECHOS</h1>
@@ -348,6 +349,7 @@ export default function Page() {
 
   const renderSidebar = (active: string) => (
     <aside className="app-sidebar">
+      <div className="traffic-lights" aria-hidden="true"><i /><i /><i /></div>
       <div className="app-brand">
         <div className="logo-mark">E</div>
         <h1>回声 ECHOS</h1>

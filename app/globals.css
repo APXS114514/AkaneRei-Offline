@@ -92,22 +92,11 @@ select.input-field { cursor: pointer; }
 /* ---------- 登录（macOS 窗口） ---------- */
 .login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
 .login-card {
-  width: min(380px, 92vw); padding: 36px 30px 30px; position: relative;
+  width: min(380px, 92vw); padding: 40px 30px 30px; position: relative;
   border-radius: 12px; border: 1px solid rgba(255,255,255,.1);
   background: var(--sidebar);
   backdrop-filter: blur(28px) saturate(1.9); -webkit-backdrop-filter: blur(28px) saturate(1.9);
   box-shadow: 0 0 0 .5px rgba(0,0,0,.4), 0 30px 80px rgba(0,0,0,.55);
-}
-/* 交通灯 */
-.login-card::before {
-  content: ""; position: absolute; left: 20px; top: 18px;
-  width: 52px; height: 14px;
-  background:
-    radial-gradient(circle at 7px 7px, #ff5f57 0 6.5px, #ff5f57 6.5px),
-    radial-gradient(circle at 26px 7px, #febc2e 0 6.5px, #febc2e 6.5px),
-    radial-gradient(circle at 45px 7px, #28c840 0 6.5px, #28c840 6.5px);
-  background-size: 14px 14px; background-repeat: no-repeat; background-position: 0 0, 19px 0, 38px 0;
-  opacity: .92;
 }
 .login-logo { display: flex; align-items: center; gap: 10px; margin-top: 14px; }
 .login-logo .logo-mark { width: 42px; height: 42px; border-radius: 12px; background: linear-gradient(180deg, #0a84ff, #0066e8); display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 19px; box-shadow: 0 4px 12px rgba(0,110,230,.4); }
@@ -141,18 +130,15 @@ select.input-field { cursor: pointer; }
   border-right: 1px solid var(--line);
   display: flex; flex-direction: column;
 }
-/* macOS 交通灯：窗口左上角（Finder/Notes 风格，横跨侧栏） */
-.app-sidebar::before {
-  content: ""; position: absolute; left: 18px; top: 16px; z-index: 2;
-  width: 52px; height: 14px;
-  background:
-    radial-gradient(circle at 7px 7px, #ff5f57 0 6.5px, #ff5f57 6.5px),
-    radial-gradient(circle at 26px 7px, #febc2e 0 6.5px, #febc2e 6.5px),
-    radial-gradient(circle at 45px 7px, #28c840 0 6.5px, #28c840 6.5px);
-  background-size: 14px 14px; background-repeat: no-repeat; background-position: 0 0, 19px 0, 38px 0;
-  opacity: .92;
-  filter: drop-shadow(0 1px 1px rgba(0,0,0,.15));
+/* macOS 交通灯（纯圆形元素） */
+.traffic-lights { position: absolute; left: 16px; top: 15px; z-index: 2; display: flex; gap: 8px; }
+.traffic-lights i {
+  width: 12px; height: 12px; border-radius: 50%;
+  box-shadow: inset 0 0 0 .5px rgba(0,0,0,.14), 0 1px 1px rgba(0,0,0,.12);
 }
+.traffic-lights i:nth-child(1) { background: #ff5f57; }
+.traffic-lights i:nth-child(2) { background: #febc2e; }
+.traffic-lights i:nth-child(3) { background: #28c840; }
 .app-brand { display: flex; align-items: center; gap: 9px; padding: 42px 16px 10px; }
 .app-brand .logo-mark { width: 30px; height: 30px; border-radius: 8px; background: linear-gradient(180deg, #0a84ff, #0066e8); display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 14px; box-shadow: 0 2px 8px rgba(0,110,230,.35); animation: logo-pulse 4s ease-in-out infinite; }
 @keyframes logo-pulse { 0%, 100% { box-shadow: 0 2px 8px rgba(0,110,230,.35); } 50% { box-shadow: 0 2px 16px rgba(0,122,255,.6); } }
@@ -451,15 +437,15 @@ select.input-field { cursor: pointer; }
 .truth-page p { color: #aab4bf; }
 .truth-page .truth-warn { border: 1px solid rgba(176,58,58,.5); border-radius: 10px; padding: 12px 16px; color: #e0a9a5; background: rgba(176,58,58,.08); margin-bottom: 26px; }
 
-/* ---------- 路由切换动画（macOS 淡入缩放） ---------- */
-.route-view { animation: route-in .22s var(--ease-mac) both; min-height: 100vh; }
+/* ---------- 路由切换动画（macOS 柔和淡入） ---------- */
+.route-view { animation: route-in .32s var(--ease-mac) both; min-height: 100vh; }
 @keyframes route-in {
-  from { opacity: 0; transform: scale(.985) translateY(4px); }
-  to { opacity: 1; transform: none; }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
-.route-view .app-shell { animation: window-in .28s var(--ease-mac) both; }
+.route-view .app-shell { animation: window-in .42s var(--ease-mac) both; }
 @keyframes window-in {
-  from { opacity: 0; transform: translateY(10px) scale(.985); }
+  from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: none; }
 }
 
@@ -467,7 +453,7 @@ select.input-field { cursor: pointer; }
 @media (max-width: 700px) {
   .app-shell { height: 100vh; margin: 0; border-radius: 0; border: 0; }
   .app-sidebar { width: 76px; }
-  .app-sidebar::before { display: none; }
+  .traffic-lights { display: none; }
   .app-brand { padding-top: 14px; }
   .app-brand h1, .app-nav button span.nav-label, .app-account { display: none; }
   .app-nav button { justify-content: center; padding: 12px; }
