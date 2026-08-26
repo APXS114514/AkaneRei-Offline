@@ -320,4 +320,8 @@ test("v0.4 flow gaps: welcome window, evidence confirm, Aka-0 archive, QA segmen
   assert.match(page, /关闭并返回主窗口/);
   assert.match(page, /window\.close\(\)/);
   assert.match(page, /若未能自动关闭本窗口/);
+
+  // 快断开 → 返回登录页重新登录 AkaneRei（流程文档 §2.5，而非直接回消息页）
+  assert.match(page, /luvisLogin: false, case02: "done", loggedIn: false/);
+  assert.match(page, /applyRoute\(\{ name: "login" \}\);/);
 });

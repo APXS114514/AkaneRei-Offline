@@ -291,10 +291,10 @@ export default function Page() {
     [applyRoute, openRecord, game.luvisNotes, game.case02]
   );
 
-  /** 崩坏演出结束：断开残留账号，回到 AkaneRei 主界面 */
+  /** 崩坏演出结束：断开残留账号，返回登录页重新登录 AkaneRei（流程文档 §2.5） */
   const escapeBreach = useCallback(() => {
-    setGame((g) => ({ ...g, luvisLogin: false, case02: "done" }));
-    applyRoute({ name: "home" });
+    setGame((g) => ({ ...g, luvisLogin: false, case02: "done", loggedIn: false }));
+    applyRoute({ name: "login" });
   }, [applyRoute]);
 
   const goTo = useCallback(

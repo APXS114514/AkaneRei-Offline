@@ -267,6 +267,16 @@ function docOrder(): string[] {
     n.luvisLogin = false;
     n.case02 = "done";
   });
+  // §2.5 快断开后必须返回登录页重新登录 AkaneRei，而非直接回消息页
+  act("点击「快断开」→ 断开残留账号并登出 AkaneRei，返回登录页", (n) => {
+    assert.equal(n.luvisLogin, false, "残留账号应已断开");
+    n.loggedIn = false;
+  });
+  act("重新登录 AkaneRei（0408）→ 首页出现《连接与断开守则》待办与汐泊诺思迁移公告", (n) => {
+    n.loggedIn = true;
+    // 守则待办点击即可打开（不要求先检索）；汐泊诺思公告指向其会话
+    openViaSearch(n, "守则", "rec-rules");
+  });
   act("检索「赫兹」→ 赫兹实验室供应商备案", (n) => { openViaSearch(n, "赫兹", "rec-hz-vendor"); });
   act("检索「文化基金」→ 赫兹文化基金资金归拢", (n) => { openViaSearch(n, "文化基金", "rec-hz-fund"); });
   act("打开《连接与断开守则》（CASE 02 后首页待办）", (n) => { openViaSearch(n, "守则", "rec-rules"); });
