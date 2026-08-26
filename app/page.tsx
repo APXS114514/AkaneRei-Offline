@@ -23,6 +23,7 @@ import {
   endingAvailable,
   groupMessages,
   luvisMessages,
+  maskName,
   n9rtzMessages,
   reviewReady,
   shioMessages,
@@ -159,6 +160,7 @@ export default function Page() {
   const [voicePlaying, setVoicePlaying] = useState<string | null>(null);
   const voiceRefs = useRef<Record<string, HTMLAudioElement | null>>({});
   const [debugNotice, setDebugNotice] = useState("");
+  const [legacyPopupHint, setLegacyPopupHint] = useState("");
   const [confirmReset, setConfirmReset] = useState(false);
   const chatBodyRef = useRef<HTMLDivElement>(null);
   const survTimerRef = useRef<number | null>(null);
@@ -296,7 +298,13 @@ export default function Page() {
         ? game.luvisNotes
         : [...game.luvisNotes, recId];
       openRecord(recId);
-      setGame((g) => ({ ...g, luvisNotes: nextNotes, case02: "partial" }));
+      setGame((g) => ({
+        ...g,
+        luvisNotes: nextNotes,
+        // 章节只前进不后退：CASE 02 已完成后重读笔记，不得把 case02 降回 partial
+        //（否则检索门槛会突然重新锁死，出现「第一次能搜到、第二次变成未解锁」）
+        case02: g.case02 === "done" ? "done" : "partial",
+      }));
       if (nextNotes.length >= LEGACY_NOTES.length && game.case02 !== "done") {
         window.setTimeout(() => applyRoute({ name: "breach" }), 600);
       }
@@ -433,7 +441,14 @@ export default function Page() {
         return {
           kind: "locked" as const,
           q,
-          lockedTitles: matches.map((e) => RECORDS[e.recId].title),
+          lockedItems: matches.map((e) => {
+            const rec = RECORDS[e.recId];
+            return {
+              // 标题走姓名掩码：档案仍被封锁时不得泄露「汐泊诺思」等完整姓名
+              title: maskName(rec.title, game),
+              hint: rec.unlockHint,
+            };
+          }),
         };
       }
       return { kind: "empty" as const, q };
@@ -665,6 +680,15 @@ export default function Page() {
             <b>调试模式</b>
             <span>{debugNotice}</span>
             <button className="text-button" onClick={() => setDebugNotice("")}>关闭提示</button>
+          </div>
+        </div>
+      )}
+      {legacyPopupHint && (
+        <div className="home-notices">
+          <div className="home-notice">
+            <b>本地备份</b>
+            <span>{legacyPopupHint}</span>
+            <button className="text-button" onClick={() => setLegacyPopupHint("")}>知道了</button>
           </div>
         </div>
       )}
@@ -957,8 +981,13 @@ export default function Page() {
       {!survPending && searchResults?.kind === "locked" && (
         <div className="search-empty locked">
           与「{searchResults.q}」相关的结果尚未解锁。<br />
-          🔒 {searchResults.lockedTitles.join("、")} 需要先完成对应章节的调查。<br />
-          <span className="search-lock-hint">完成调查后返回此页重新检索即可查看。</span>
+          {searchResults.lockedItems.map((it) => (
+            <div key={it.title}>
+              🔒 {it.title}
+              {it.hint ? `：${it.hint}` : "：需要先完成对应章节的调查"}
+            </div>
+          ))}
+          <span className="search-lock-hint">档案会随调查进度逐步开放。完成后返回此页重新检索即可查看。</span>
         </div>
       )}
       {!survPending && searchResults?.kind === "results" && (
@@ -1028,7 +1057,8 @@ export default function Page() {
                     const url = `${window.location.pathname}#/legacy`;
                     const win = window.open(url, "_blank", "noopener");
                     if (!win) {
-                      setDebugNotice("浏览器拦截了本地备份弹窗。请在地址栏允许本站弹出窗口；也可直接在主窗口的残留账号模块继续调查。");
+                      // 弹窗被拦截：正常提示，不用「调试模式」横幅（那不是调试入口触发的）
+                      setLegacyPopupHint("本地备份窗口未能打开（浏览器拦截了弹窗）。无需处理——残留账号的资料仍可在当前页面继续查看。");
                     }
                   } catch {
                     /* 弹窗不可用时忽略，主窗口流程不受影响 */

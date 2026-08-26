@@ -210,6 +210,8 @@ export interface GameRecord {
   fields?: { k: string; v: string; abnormal?: boolean }[];
   chapter: "case01" | "case02" | "case03" | "case04" | "meta";
   require?: (g: GameState) => boolean;
+  /** 检索命中但被门槛锁定时展示的解锁指引（「引导不神秘」：告诉玩家怎么打开，而不是只说没解锁） */
+  unlockHint?: string;
 }
 
 export interface TimelineItem {

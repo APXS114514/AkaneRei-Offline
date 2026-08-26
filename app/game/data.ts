@@ -13,10 +13,18 @@ export function shioName(g: GameState): string {
   return g.openedRecords.includes("rec-playlist") ? "汐泊诺思" : "汐○";
 }
 
+/** 姓名掩码通用版：歌单解锁前把任意文本里的完整姓名替换为「汐○」。
+ *  用于检索「尚未解锁」提示等场景——避免在档案本身仍被封锁时泄露姓名（如冷备份舱标题）。 */
+export function maskName(text: string, g: GameState): string {
+  return g.openedRecords.includes("rec-playlist") ? text : text.replace(/汐泊诺思/g, "汐○");
+}
+
 export function groupMessages(ending: GameState["ending"] = "none", shioSender = "汐泊诺思"): Msg[] {
   const msgs: Msg[] = [
     { id: "g0", from: "system", kind: "warn", text: "群公告已被替换为《连接与断开守则》节选，原公告无法查看。", time: "04:08" },
     { id: "g1", from: "them", name: shioSender, text: "今天也是第一次见你。", time: "23:58", status: "unread" },
+    { id: "g2b", from: "them", name: "Roy", text: "今晚网好卡，大家语音的时候别乱动路由器啊（", time: "04:01" },
+    { id: "g2c", from: "them", name: "已注销用户", text: "……", time: "04:02", kind: "abnormal" },
     { id: "g2", from: "them", name: "Roy", text: "回声 ECHOS 版本更新预告：本次将优化消息同步稳定性，敬请期待。", time: "04:03" },
     { id: "g3", from: "them", name: "APXS", text: "楼下新开的奶茶店第二杯半价，有人拼单吗？", time: "04:04" },
     { id: "g4", from: "them", name: "Rtwyzz", text: "路过。", time: "04:05" },
@@ -158,6 +166,7 @@ export const RECORDS: Record<string, GameRecord> = {
       "2026-04-08 04:08，一场进行中的语音通话发生中断。",
       "系统自动写入归因：「网络波动」。",
       "该归因由系统自动生成，未经验证。相关记录可在台账中复核。",
+      "通话双方未发起重拨；中断后约一分钟，对方账号状态变更为「刚刚在线」，此后未再产生任何通话记录。",
     ],
     fields: [
       { k: "中断时间", v: "04:08" },
@@ -214,6 +223,7 @@ export const RECORDS: Record<string, GameRecord> = {
       "错误排列只会提示「证据不连续」，不会清空你已经排好的节点。",
     ],
     require: (g) => g.case01 === "puzzles",
+    unlockHint: "先打开「通话中断记录」「通话记录」「夜间录音」三份材料",
   },
   "rec-luvisdrug-profile": {
     id: "rec-luvisdrug-profile",
@@ -233,6 +243,7 @@ export const RECORDS: Record<string, GameRecord> = {
       { k: "头像标注", v: "97.0 HZ" },
     ],
     require: (g) => g.case01 === "done",
+    unlockHint: "完成 CASE 01「已读不回」后开放",
   },
   "rec-shio-profile": {
     id: "rec-shio-profile",
@@ -245,6 +256,7 @@ export const RECORDS: Record<string, GameRecord> = {
       "姓名显示为掩码「汐○」，完整姓名不可见。",
       "个性签名：「如果有一天你不再上线，我会把歌单听完。」",
       "对方每晚 23:58 发送同一条消息，读取状态异常。",
+      "最近动态：2026-04-08 04:06 最后修改了共享歌单，之后再无任何操作记录。",
     ],
     fields: [
       { k: "姓名", v: "汐○（掩码）" },
@@ -267,6 +279,7 @@ export const RECORDS: Record<string, GameRecord> = {
       "向下滚动时，页面仍在不断生成新的条款。本文档没有终点。",
     ],
     require: (g) => g.case02 !== "none",
+    unlockHint: "推进 CASE 02「已注销」后开放",
   },
   "rec-accident": {
     id: "rec-accident",
@@ -276,10 +289,11 @@ export const RECORDS: Record<string, GameRecord> = {
     source: "本地新闻 · 2026-04-09",
     snippet: "死者：晓茜。紧急联系人：汐○。事故时间：04:08。",
     body: [
-      "2026 年 4 月 8 日凌晨 4 时 08 分，一名女子从高层住宅阳台坠落，当场死亡。",
+      "2026 年 4 月 8 日凌晨 4 时 08 分，澄江公寓（临高架桥一侧）一名年轻女子从高层阳台坠落，急救人员到场后确认已无生命体征。",
       "死者：晓茜。",
+      "据现场勘查，阳台护栏外侧留有攀爬与踩踏痕迹，女子坠落前疑似正探身窗外检修线路。警方已初步排除他杀，事故原因仍在调查中。",
       "紧急联系人栏登记为「汐○」，身份待核。",
-      "现场勘查显示，死者坠落前曾探身窗外。事故原因仍在调查中。",
+      "多名住户反映，事发前曾断续听到该户传出说话声，约 4 时后彻底安静；平台方暂未就「通话中断」相关问询作出回应。",
     ],
     fields: [
       { k: "事故时间", v: "2026-04-08 04:08" },
@@ -289,6 +303,7 @@ export const RECORDS: Record<string, GameRecord> = {
       { k: "调查结论", v: "进行中（非司法定论）" },
     ],
     require: (g) => g.case02 === "done",
+    unlockHint: "完成 CASE 02「已注销」后开放",
   },
   "rec-hz-vendor": {
     id: "rec-hz-vendor",
@@ -301,6 +316,7 @@ export const RECORDS: Record<string, GameRecord> = {
       "回声网络（ECHOS 平台运营方）与赫兹实验室（HZ）存在正式供应商关系。",
       "供应商投标文件反复出现内部口号：「连接该连接的，切断该切断的。」",
       "培训、缓存清理、令牌重建与好友迁移的时间高度重合。",
+      "备案材料显示，双方共享同一批运维工号，且赫兹可直接调用回声网络的账号权限接口。",
     ],
     fields: [
       { k: "关系", v: "供应商 / 实际控制方" },
@@ -320,6 +336,7 @@ export const RECORDS: Record<string, GameRecord> = {
       "平台向赫兹实验室支付的费用以「特殊保管」「数据过滤」「同步维护」等名义列支。",
       "上述费用最终归集到赫兹关联文化基金。",
       "基金名称与零信号电子签章同时出现在供应商投标文件中。",
+      "三笔费用的支付时间均在 04:00–05:00 之间，与每周例行维护窗口一致。",
     ],
     fields: [
       { k: "费用科目", v: "特殊保管 / 数据过滤 / 同步维护" },
@@ -327,6 +344,7 @@ export const RECORDS: Record<string, GameRecord> = {
       { k: "签章", v: "零信号电子签章" },
     ],
     require: (g) => g.case02 !== "none",
+    unlockHint: "推进 CASE 02「已注销」后开放",
   },
   "rec-note-1": {
     id: "rec-note-1",
@@ -342,6 +360,7 @@ export const RECORDS: Record<string, GameRecord> = {
       "我以为是平台在清理僵尸号。直到我看到迁移的时间——全是凌晨 04:08。",
     ],
     require: (g) => g.luvisLogin,
+    unlockHint: "登录残留账号后开放",
   },
   "rec-note-2": {
     id: "rec-note-2",
@@ -357,6 +376,7 @@ export const RECORDS: Record<string, GameRecord> = {
       "连接该连接的，切断该切断的。",
     ],
     require: (g) => g.luvisLogin,
+    unlockHint: "登录残留账号后开放",
   },
   "rec-note-3": {
     id: "rec-note-3",
@@ -372,6 +392,7 @@ export const RECORDS: Record<string, GameRecord> = {
       "这不是网络波动。这是有人每天晚上都在重建它们的一天。",
     ],
     require: (g) => g.luvisLogin,
+    unlockHint: "登录残留账号后开放",
   },
   "rec-note-4": {
     id: "rec-note-4",
@@ -388,6 +409,7 @@ export const RECORDS: Record<string, GameRecord> = {
       "有人在等一个不会回复的人。告诉她别等了。",
     ],
     require: (g) => g.luvisLogin,
+    unlockHint: "登录残留账号后开放",
   },
   "rec-luvis-audit": {
     id: "rec-luvis-audit",
@@ -408,6 +430,7 @@ export const RECORDS: Record<string, GameRecord> = {
       { k: "处置人", v: "HZ-COMPLIANCE（系统）" },
     ],
     require: (g) => g.luvisLogin,
+    unlockHint: "登录残留账号后开放",
   },
   "rec-playlist": {
     id: "rec-playlist",
@@ -423,6 +446,7 @@ export const RECORDS: Record<string, GameRecord> = {
       "曲目列表：",
     ],
     require: (g) => g.case02 === "done",
+    unlockHint: "完成 CASE 02「已注销」后开放",
   },
   "rec-cold-backup": {
     id: "rec-cold-backup",
@@ -433,10 +457,13 @@ export const RECORDS: Record<string, GameRecord> = {
     snippet: "汐泊诺思账号的封存内容。需要备份舱密码。",
     body: [
       "汐泊诺思账号已被迁移至冷备份服务器，聊天记录与本地文件被封存。",
+      "舱内封存：208 条问候消息（读取状态全部为「已读」）、一条未发送的告别语音（2026-04-08 04:06 录制，约 8 秒）、一封未发出的本地草稿，以及一张事故当晚的「最后上线」截图。",
+      "问候消息每晚 23:58 准时发出，内容始终是同一句「今天也是第一次见你。」——208 条，全部已读。",
       "封存内容需要备份舱密码才能打开。",
       "密码来源：资料卡完整姓名转无声调、无空格全拼。",
     ],
     require: (g) => g.openedRecords.includes("rec-playlist"),
+    unlockHint: "先检索「歌单」解锁姓名掩码",
   },
   "rec-qa-1": {
     id: "rec-qa-1",
@@ -450,8 +477,10 @@ export const RECORDS: Record<string, GameRecord> = {
       "通话时长 68 分钟，中断于 04:08。",
       "质检标注：坐席话术偏离标准流程，多次长时间停顿；未按规范引导用户重启设备。",
       "回放末尾有一段未归类的人声残响，质检系统未作结论。",
+      "质检员备注：通话前约 60 分钟为正常夜间闲聊，语气轻松；中断前约 5 分钟，坐席声音明显紧张，并出现「信号要断了」「别去」等未能归类的语句片段。",
     ],
     require: (g) => g.case01 === "done",
+    unlockHint: "完成 CASE 01「已读不回」后开放",
   },
   "rec-qa-2": {
     id: "rec-qa-2",
@@ -464,8 +493,10 @@ export const RECORDS: Record<string, GameRecord> = {
       "第二段 · LuvisDrug 注销前最后的私信质检。",
       "坐席在对话中主动提及「迁移」「冷备份」等内部字段，未按要求在检测到异常后终止对话。",
       "质检结论：流程违规。处置记录创建时间早于注销申请 3 天，未见人工复核痕迹。",
+      "质检员备注：坐席在会话末尾反复追问「你查到了什么」「备份还在不在」，随后主动断开连接；平台未记录断开原因。",
     ],
     require: (g) => g.case02 !== "none",
+    unlockHint: "推进 CASE 02「已注销」后开放",
   },
   "rec-qa-3": {
     id: "rec-qa-3",
@@ -478,8 +509,10 @@ export const RECORDS: Record<string, GameRecord> = {
       "第三段 · 汐泊诺思日常问候质检。",
       "每晚 23:58 一条问候，坐席连续 208 次重复「第一次接触」话术，从未标记为重复联系人。",
       "质检系统未对该异常发出任何告警。",
+      "质检员备注：208 条问候的发送间隔、标点与换行完全一致，疑似由定时任务自动发送；坐席日志显示每次发送后都会短暂进入「正在输入…」状态。",
     ],
     require: (g) => g.case02 === "done",
+    unlockHint: "完成 CASE 02「已注销」后开放",
   },
   "rec-qa-4": {
     id: "rec-qa-4",
@@ -493,8 +526,10 @@ export const RECORDS: Record<string, GameRecord> = {
       "字段：「该账号 208 天未掉线」「联系人持续存在」。",
       "四段回访（N9Rtz 通话、LuvisDrug 私信、汐泊诺思问候、本记录）中的客服坐席使用了同一套工号字段。",
       "该记录仅在冷备份破拆后开放读取。",
+      "质检员备注：同一工号在四段回访中的处理时段互不重叠，但记录创建时间戳完全相同——疑似批量生成，未发现人工介入痕迹。",
     ],
     require: (g) => g.case03 === "done",
+    unlockHint: "完成 CASE 03「冷备份」后开放",
   },
   "rec-identity-check": {
     id: "rec-identity-check",
@@ -508,6 +543,7 @@ export const RECORDS: Record<string, GameRecord> = {
       "提交后，平台将尝试覆盖联系人关系、账号主体与「未断连接」的含义。",
     ],
     require: (g) => g.aka0Confirmed,
+    unlockHint: "完成身份复核后开放",
   },
   "rec-aka0-archive": {
     id: "rec-aka0-archive",
@@ -530,6 +566,7 @@ export const RECORDS: Record<string, GameRecord> = {
       { k: "归档类型", v: "只读（人工复核提交后生成）" },
     ],
     require: (g) => g.aka0Confirmed,
+    unlockHint: "完成身份复核后开放",
   },
   "rec-plat-notice": {
     id: "rec-plat-notice",
