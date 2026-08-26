@@ -16,7 +16,6 @@ import {
 } from "./game/types";
 import {
   CONVS,
-  PLAYLIST_TRACKS,
   RECORDS,
   SEARCH_INDEX,
   SURVEILLANCE_TERMS,
@@ -27,6 +26,7 @@ import {
   n9rtzMessages,
   reviewReady,
   shioMessages,
+  shioName,
 } from "./game/data";
 import {
   AudioLayer,
@@ -40,6 +40,7 @@ import {
   LegacyAccount,
   LegacyLogin,
   LegacyWindowPage,
+  PlaylistDetail,
   ReviewPage,
   RulesAppender,
   StemPuzzle,
@@ -304,6 +305,17 @@ export default function Page() {
     },
     [applyRoute, openRecord]
   );
+
+  /** 汐泊诺思资料卡动态标题/摘要：歌单解锁前掩码为「汐○」，解锁后显示完整姓名（§3.1/§3.2） */
+  const shioRecord = (rec: GameRecord): GameRecord => {
+    if (rec.id !== "rec-shio-profile") return rec;
+    const unmasked = game.openedRecords.includes("rec-playlist");
+    return {
+      ...rec,
+      title: unmasked ? "汐泊诺思 资料卡" : "汐○ 资料卡",
+      snippet: unmasked ? "姓名：汐泊诺思（已解除掩码）。状态：刚刚在线。" : rec.snippet,
+    };
+  };
 
   /* ---------- 登录 ---------- */
 
@@ -647,6 +659,20 @@ export default function Page() {
           </div>
         </div>
       )}
+      {game.case03 === "done" && !game.aka0Confirmed && !reviewReady(game) && (
+        <div className="home-notices">
+          <div className="home-notice warn">
+            <b>继续调查：CASE 04 最后在线</b>
+            <span>
+              冷备份已破拆，四段质检回访的最后一段（平台客服记录）已解锁。
+              检索「质检」读完四段回访、检索「事故」查看 4·08 坠亡事故通报，
+              并确认已读过《连接与断开守则》（首页待办）。
+              全部完成后，平台质检系统会发来仅当前会话可读的复核通知。
+            </span>
+            <button className="text-button" onClick={() => goTo({ name: "search" })}>去检索 →</button>
+          </div>
+        </div>
+      )}
       {reviewReady(game) && !game.aka0Confirmed && (
         <div className="home-notices">
           <div className="home-notice warn">
@@ -719,7 +745,7 @@ export default function Page() {
           </div>
           <div className="home-notice">
             <b>平台公告</b>
-            <span>汐泊诺思账号状态异常，已迁移至冷备份服务器。详见其会话。</span>
+            <span>{shioName(game)}账号状态异常，已迁移至冷备份服务器。详见其会话。</span>
             <button className="text-button" onClick={() => goTo({ name: "chat", convId: "shio" })}>查看会话 →</button>
           </div>
         </div>
@@ -737,7 +763,7 @@ export default function Page() {
           </div>
           <div className="conv-meta">
             <div className="row">
-              <span className="name">{c.name}</span>
+              <span className="name">{c.id === "shio" ? shioName(game) : c.name}</span>
               <span className="time">{c.time}</span>
             </div>
             <div className="preview">
@@ -755,9 +781,9 @@ export default function Page() {
     if (!conv) return <div className="chat-blank">会话不存在。</div>;
     let msgs: Msg[] = [];
     const headerStatus = conv.status;
-    if (conv.id === "everyone") msgs = groupMessages(game.ending);
+    if (conv.id === "everyone") msgs = groupMessages(game.ending, shioName(game));
     if (conv.id === "n9rtz") msgs = n9rtzMessages(game.case01);
-    if (conv.id === "shio") msgs = shioMessages(game.case02 === "done", game.case03 === "done");
+    if (conv.id === "shio") msgs = shioMessages(game.case02 === "done", game.case03 === "done", shioName(game));
     if (conv.id === "luvis") msgs = luvisMessages();
     if (conv.id === "echo-assist") msgs = echoAssistMessages(reviewReady(game) && !game.aka0Confirmed);
     const effectiveStatus =
@@ -770,7 +796,7 @@ export default function Page() {
             {conv.avatar ? <img src={assetPath(conv.avatar)} alt="" className="conv-avatar-img" /> : conv.initials}
           </div>
           <div className="info">
-            <b>{conv.name}</b>
+            <b>{conv.id === "shio" ? shioName(game) : conv.name}</b>
             <span>{effectiveStatus}</span>
           </div>
         </div>
@@ -916,20 +942,23 @@ export default function Page() {
       )}
       {!survPending && searchResults?.kind === "results" && (
         <div className="search-results">
-          {searchResults.recs.map((r) => (
-            <button key={r.id} className="record-card" onClick={() => goTo({ name: "article", recId: r.id })}>
-              <div className="rc-kind">{r.kind}</div>
-              <div className="rc-title">{r.title}</div>
-              <div className="rc-snippet">{r.snippet}</div>
-            </button>
-          ))}
+          {searchResults.recs.map((r) => {
+            const rec = shioRecord(r);
+            return (
+              <button key={r.id} className="record-card" onClick={() => goTo({ name: "article", recId: r.id })}>
+                <div className="rc-kind">{rec.kind}</div>
+                <div className="rc-title">{rec.title}</div>
+                <div className="rc-snippet">{rec.snippet}</div>
+              </button>
+            );
+          })}
         </div>
       )}
     </div>
   );
 
   const renderArticle = (recId: string) => {
-    const rec = RECORDS[recId];
+    const rec = shioRecord(RECORDS[recId]);
     if (!rec) return <div className="chat-blank">档案不存在。</div>;
     const isLegacyNote = LEGACY_NOTES.includes(recId);
     return (
@@ -988,13 +1017,7 @@ export default function Page() {
             )
           )}
           {recId === "rec-rules" && <RulesAppender />}
-          {recId === "rec-playlist" && (
-            <div className="playlist-tracks">
-              {PLAYLIST_TRACKS.map((t) => (
-                <div key={t} className="playlist-track">{t}</div>
-              ))}
-            </div>
-          )}
+          {recId === "rec-playlist" && <PlaylistDetail volume={game.bgmVolume} />}
           {recId === "rec-shio-profile" && game.openedRecords.includes("rec-playlist") && (
             <div className="puzzle-feedback right" style={{ marginTop: 14 }}>
               歌单解锁后，资料卡姓名解除掩码：<b>汐泊诺思</b>（全拼：XIBONUOSI）。
@@ -1046,12 +1069,15 @@ export default function Page() {
               <h3>{c.done ? c.name : <span className="lock">🔒 {c.name}</span>}</h3>
               <div className="archive-items">
                 {items.length === 0 && <div className="archive-empty">（本章暂无已打开的记录）</div>}
-                {items.map((r) => (
-                  <button key={r.id} className="archive-item" onClick={() => goTo({ name: "article", recId: r.id })}>
-                    <span className="ai-title">{r.title}</span>
-                    <span className="ai-meta">{r.kind}</span>
-                  </button>
-                ))}
+                {items.map((r) => {
+                  const rec = shioRecord(r);
+                  return (
+                    <button key={r.id} className="archive-item" onClick={() => goTo({ name: "article", recId: r.id })}>
+                      <span className="ai-title">{rec.title}</span>
+                      <span className="ai-meta">{rec.kind}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           );
@@ -1060,12 +1086,15 @@ export default function Page() {
           <h3>其他记录</h3>
           <div className="archive-items">
             {byChapter("meta").length === 0 && <div className="archive-empty">（暂无）</div>}
-            {byChapter("meta").map((r) => (
-              <button key={r.id} className="archive-item" onClick={() => goTo({ name: "article", recId: r.id })}>
-                <span className="ai-title">{r.title}</span>
-                <span className="ai-meta">{r.kind}</span>
-              </button>
-            ))}
+            {byChapter("meta").map((r) => {
+              const rec = shioRecord(r);
+              return (
+                <button key={r.id} className="archive-item" onClick={() => goTo({ name: "article", recId: r.id })}>
+                  <span className="ai-title">{rec.title}</span>
+                  <span className="ai-meta">{rec.kind}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
         <div className="archive-hint">
@@ -1084,6 +1113,12 @@ export default function Page() {
         <div className="settings-row"><span className="k">状态</span><span className="v">在线 · 208 天未掉线</span></div>
         <div className="settings-row"><span className="k">云端同步</span><span className="v abnormal" style={{ color: "var(--danger)" }}>04:08 自动执行</span></div>
       </div>
+      {game.case03 === "done" && !game.aka0Confirmed && !reviewReady(game) && (
+        <div className="settings-card card">
+          <h3>账号来源与同名主体复核</h3>
+          <p>复核入口尚未开放。需先完成：检索「质检」读完四段回访、检索「事故」查看 4·08 坠亡事故通报，并已读《连接与断开守则》。</p>
+        </div>
+      )}
       {reviewReady(game) && !game.aka0Confirmed && (
         <div className="settings-card card">
           <h3>账号来源与同名主体复核</h3>

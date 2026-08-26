@@ -12,16 +12,20 @@
 | ③ 平台重连提示音 | `stem-ui.wav` | 两次短提示音（820Hz / 660Hz） |
 | ④ 断裂与撞击 | `stem-crash.wav` | 4.2s 断裂瞬态 + 5.0s 坠落撞击 |
 
-## 告别语音（真实人声合成）
+## 告别语音（真实女声素材）
 
-`shio-farewell.wav` 由 Windows 中文语音 **Microsoft Huihui（zh-CN，女声）** 合成，
-内容为汐泊诺思未发出的告别（游戏内不揭示实名）：
+`shio-farewell.wav` 为**真实女声素材**（原始文件 `音频/女声我会把歌单听完.wav`，
+24kHz、16-bit 单声道，约 8.4 秒，AI 生成人声，文件含 AIGC 标记块），
+内容为汐泊诺思未发出的告别核心句：
 
-> 「如果……有一天你不再上线，我会把歌单听完。晚安。」
+> 「我会把歌单听完。」
 
-- 采样率 22050 Hz，16-bit 单声道，约 8.7 秒，语速 -2。
-- 合成命令：`System.Speech.Synthesis`（PowerShell）。
-- **注意**：`npm run audio:generate` 不会再覆盖此文件（脚本已移除占位哼唱生成）。
+游戏内配套转写（流程文档锁定，保持完整告别句）：
+「如果……有一天你不再上线，我会把歌单听完。晚安。」
+
+- 替换说明：原 `shio-farewell.wav` 由 Windows 中文语音（Microsoft Huihui）合成，
+  现按玩家提供的新女声素材替换音源（转写文本不变，播放时长标注更新为约 8 秒）。
+- **注意**：`npm run audio:generate` 不会再覆盖此文件。
 
 ## LuvisDrug 摩斯语音（玩家素材）
 

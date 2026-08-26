@@ -324,4 +324,24 @@ test("v0.4 flow gaps: welcome window, evidence confirm, Aka-0 archive, QA segmen
   // 快断开 → 返回登录页重新登录 AkaneRei（流程文档 §2.5，而非直接回消息页）
   assert.match(page, /luvisLogin: false, case02: "done", loggedIn: false/);
   assert.match(page, /applyRoute\(\{ name: "login" \}\);/);
+
+  // 汐泊诺思姓名掩码：歌单解锁前所有界面显示「汐○」，解锁后解除掩码（§3.1/§3.2）
+  assert.match(page, /export function shioName/);
+  assert.match(page, /g\.openedRecords\.includes\("rec-playlist"\) \? "汐泊诺思" : "汐○"/);
+  assert.match(page, /c\.id === "shio" \? shioName\(game\) : c\.name/);
+  assert.match(page, /汐○ 资料卡/);
+
+  // CASE 03 破拆后引导（防卡关）：首页提示检索质检/事故/守则，冷备份反馈与设置页同向提示
+  assert.match(page, /继续调查：CASE 04 最后在线/);
+  assert.match(page, /检索「质检」读完四段回访/);
+  assert.match(page, /<b>下一步：<\/b>检索「质检」读完四段回访/);
+  assert.match(page, /复核入口尚未开放/);
+
+  // 女声告别语音（替换原合成音源）与歌单歌词：时长标注、歌词数据、歌单详情组件、歌词可检索
+  assert.match(page, /约 8 秒 · 女声 · 未发送/);
+  assert.match(page, /PLAYLIST_LYRICS/);
+  assert.match(page, /PlaylistDetail/);
+  assert.match(page, /歌单简介（女声）/);
+  assert.match(page, /我会把歌单听完/);
+  assert.match(page, /terms: \["歌词", "潮汐", "夜航", "别等", "天亮以后", "未读", "已读"\]/);
 });

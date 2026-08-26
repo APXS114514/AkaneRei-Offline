@@ -2,7 +2,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { GameState, Route, SignalBall, SignalObstacle, Stem, TimelineItem } from "./types";
 import { SAVE_KEY, assetPath, readSavedGame } from "./types";
-import { RECORDS } from "./data";
+import { RECORDS, PLAYLIST_LYRICS } from "./data";
 import { playMessageTone, playScare, playSurveillanceNoise, setMasterVolume } from "./sound";
 /* 展示组件 —— 由 app/page.tsx 拆分而来 */
 /* ---------------- CASE 01 谜题：时间线复原 ---------------- */
@@ -471,7 +471,7 @@ export function LegacyWindowPage() {
             <div className="lw-done">
               ✅ 线索已同步。CASE 02「已注销」完成。
               <br />
-              请返回主窗口继续调查——首页已出现《连接与断开守则》待办与汐泊诺思迁移公告。
+              请返回主窗口继续调查——首页已出现《连接与断开守则》待办与账号迁移公告。
             </div>
             <div className="lw-actions">
               <button className="primary-button" onClick={closeWindow}>关闭并返回主窗口</button>
@@ -766,7 +766,7 @@ export function WelcomeInfoWindow({ onClose }: { onClose: () => void }) {
           <b>全员群</b>
           <p>
             最新消息摘要：群公告已被替换为《连接与断开守则》节选，原公告无法查看。
-            全员群所有消息停在 04:08。汐泊诺思 23:58 发来今天的「第一次」问候。
+            全员群所有消息停在 04:08。汐○ 23:58 发来今天的「第一次」问候。
           </p>
         </div>
         <button className="primary-button" style={{ width: "100%" }} onClick={onClose}>
@@ -943,7 +943,7 @@ export function ColdBackup({ done, onSuccess, volume }: { done: boolean; onSucce
               </button>
               <div className="stem-meta">
                 <b>告别语音（人声）</b>
-                <span>约 11s · 女声 · 未发送</span>
+                <span>约 8 秒 · 女声 · 未发送</span>
               </div>
               <audio
                 ref={farewellRef}
@@ -971,9 +971,73 @@ export function ColdBackup({ done, onSuccess, volume }: { done: boolean; onSucce
           <div className="puzzle-feedback right" style={{ marginTop: 14 }}>
             冷备份已破拆。平台弹出警告：<b>FRIEND-KEEP 策略提示：不得动用私情。</b>
             <br />汐泊诺思账号状态变为：离线（用户主动）。
+            <br /><b>下一步：</b>检索「质检」读完四段回访，检索「事故」查看 4·08 坠亡事故通报。
           </div>
         </>
       )}
+    </div>
+  );
+}
+
+/* ---------------- 歌单详情：14 首曲目歌词 + 女声简介（与剧情连接） ---------------- */
+
+export function PlaylistDetail({ volume }: { volume?: number }) {
+  const [playing, setPlaying] = useState(false);
+  const [open, setOpen] = useState<string | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    const el = audioRef.current;
+    if (el) el.volume = volume ?? 1;
+  }, [volume]);
+
+  const toggleVoice = () => {
+    const el = audioRef.current;
+    if (!el) return;
+    if (playing) {
+      el.pause();
+      setPlaying(false);
+    } else {
+      el.volume = volume ?? 1;
+      void el.play().catch(() => setPlaying(false));
+      setPlaying(true);
+    }
+  };
+
+  return (
+    <div className="playlist-detail">
+      <div className="playlist-voice">
+        <button className="voice-play" onClick={toggleVoice} aria-label={playing ? "暂停歌单简介" : "播放歌单简介"}>
+          {playing ? "❚❚" : "▶"}
+        </button>
+        <div className="voice-meta">
+          <b>歌单简介（女声）</b>
+          <span>「如果有一天你不再上线，我会把歌单听完。」</span>
+        </div>
+        <audio
+          ref={audioRef}
+          src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/audio/shio-farewell.wav`}
+          onEnded={() => setPlaying(false)}
+          preload="auto"
+        />
+      </div>
+      <div className="playlist-tracks">
+        {PLAYLIST_LYRICS.map((t) => (
+          <div key={t.track} className="playlist-item">
+            <button className="playlist-track" onClick={() => setOpen(open === t.track ? null : t.track)}>
+              <span>{t.track}</span>
+              <span className="pl-expand">{open === t.track ? "▾ 收起歌词" : "▸ 查看歌词"}</span>
+            </button>
+            {open === t.track && (
+              <div className="playlist-lyrics">
+                {t.lines.map((line, i) => (
+                  <p key={i}>{line}</p>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

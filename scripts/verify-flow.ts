@@ -26,6 +26,8 @@ import {
   reviewReady,
   endingAvailable,
   PLAYLIST_TRACKS,
+  PLAYLIST_LYRICS,
+  shioName,
 } from "../app/game/data";
 import {
   LEGACY_PASSWORD,
@@ -90,6 +92,7 @@ assert.equal(LEGACY_PASSWORD, "hzloopluvisdrug", "残留账号密码契约");
 assert.equal(COLD_BACKUP_PASSWORD, "XIBONUOSI", "冷备份舱密码契约");
 assert.equal(SIGNAL_OBSTACLE_COUNT, 14, "小游戏 14 个断线障碍");
 assert.equal(PLAYLIST_TRACKS.length, 14, "歌单 14 首曲目");
+assert.equal(PLAYLIST_LYRICS.length, 14, "歌单歌词应为 14 首");
 assert.match(
   comp,
   /who\.trim\(\) === "晓茜" && status === "已死亡" && relation\.trim\(\) === "紧急联系人"/,
@@ -120,6 +123,13 @@ assert.match(src, /stem-crash\.wav", keep: true/, "断裂与撞击保留");
 // 分轨颜色统一（不泄露「保留/静音」答案）；时间排序候选统一（干扰项不再灰色）
 assert.doesNotMatch(src, /color: "#2f7cf6"|color: "#b03a3a"/, "分轨不应以颜色区分 keep/drop");
 assert.doesNotMatch(src, /distractor/, "时间排序干扰项不应有特殊样式");
+
+// §3.1/§3.2 姓名掩码契约：歌单解锁前资料卡姓名显示「汐○」，解锁后解除掩码显示「汐泊诺思」
+const gShioEmpty = clone(initialGame) as GameState;
+assert.equal(shioName(gShioEmpty), "汐○", "歌单解锁前姓名必须掩码");
+const gShioUnmasked = clone(initialGame) as GameState;
+gShioUnmasked.openedRecords.push("rec-playlist");
+assert.equal(shioName(gShioUnmasked), "汐泊诺思", "歌单解锁后姓名解除掩码");
 
 /* ---------------- 2) 检索范围表（对照流程文档「检索词 → 允许返回的最大范围」） ---------------- */
 
@@ -282,10 +292,14 @@ function docOrder(): string[] {
   act("打开《连接与断开守则》（CASE 02 后首页待办）", (n) => { openViaSearch(n, "守则", "rec-rules"); });
 
   // §3 CASE 03
-  act("检索「汐泊诺思」→ 资料卡（姓名掩码汐○）", (n) => { openViaSearch(n, "汐泊诺思", "rec-shio-profile"); });
+  act("检索「汐泊诺思」→ 资料卡（姓名掩码汐○）", (n) => {
+    assert.equal(shioName(n), "汐○", "歌单解锁前姓名应为掩码");
+    openViaSearch(n, "汐泊诺思", "rec-shio-profile");
+  });
   act("检索「歌单」→ 汐泊与零的歌单（14 首）", (n) => { openViaSearch(n, "歌单", "rec-playlist"); });
   act("歌单解锁后资料卡解除掩码：汐泊诺思 → XIBONUOSI", (n) => {
     assert.ok(n.openedRecords.includes("rec-playlist"), "歌单须先解锁");
+    assert.equal(shioName(n), "汐泊诺思", "歌单解锁后姓名应解除掩码");
   });
   act("检索「冷备份」→ 冷备份舱（汐泊诺思）", (n) => { openViaSearch(n, "冷备份", "rec-cold-backup"); });
   act("破拆冷备份舱：XIBONUOSI → CASE 03 完成「冷备份」", (n) => { n.case03 = "done"; });

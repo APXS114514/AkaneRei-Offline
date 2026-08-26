@@ -8,10 +8,15 @@ export const CONVS: Conv[] = [
   { id: "echo-assist", name: "回声小助手", kind: "bot", color: "#8a94a0", initials: "回", avatar: "/avatars/echo-assist.svg", status: "刚刚在线", preview: "欢迎使用回声 ECHOS", time: "04:08" },
 ];
 
-export function groupMessages(ending: GameState["ending"] = "none"): Msg[] {
+/** 汐泊诺思姓名掩码：歌单解锁前显示「汐○」，解锁后解除掩码显示完整姓名（流程文档 §3.1/§3.2） */
+export function shioName(g: GameState): string {
+  return g.openedRecords.includes("rec-playlist") ? "汐泊诺思" : "汐○";
+}
+
+export function groupMessages(ending: GameState["ending"] = "none", shioSender = "汐泊诺思"): Msg[] {
   const msgs: Msg[] = [
     { id: "g0", from: "system", kind: "warn", text: "群公告已被替换为《连接与断开守则》节选，原公告无法查看。", time: "04:08" },
-    { id: "g1", from: "them", name: "汐泊诺思", text: "今天也是第一次见你。", time: "23:58", status: "unread" },
+    { id: "g1", from: "them", name: shioSender, text: "今天也是第一次见你。", time: "23:58", status: "unread" },
     { id: "g2", from: "them", name: "Roy", text: "回声 ECHOS 版本更新预告：本次将优化消息同步稳定性，敬请期待。", time: "04:03" },
     { id: "g3", from: "them", name: "APXS", text: "楼下新开的奶茶店第二杯半价，有人拼单吗？", time: "04:04" },
     { id: "g4", from: "them", name: "Rtwyzz", text: "路过。", time: "04:05" },
@@ -21,13 +26,13 @@ export function groupMessages(ending: GameState["ending"] = "none"): Msg[] {
   ];
   if (ending === "good") {
     msgs.push(
-      { id: "g8", from: "them", name: "汐泊诺思", text: "晚安，不再是第一次见你。", time: "23:58", kind: "abnormal" },
+      { id: "g8", from: "them", name: shioSender, text: "晚安，不再是第一次见你。", time: "23:58", kind: "abnormal" },
       { id: "g9", from: "system", kind: "ghost", text: "该账号已注销，联系人已解除关联。04:08 之后，账号没有回来。" }
     );
   }
   if (ending === "bad") {
     msgs.push(
-      { id: "g8b", from: "them", name: "汐泊诺思", text: "今天也是第一次见你。", time: "23:58" },
+      { id: "g8b", from: "them", name: shioSender, text: "今天也是第一次见你。", time: "23:58" },
       { id: "g9b", from: "system", kind: "ghost", text: "第 209 次「第一次」。这一次，她不再期待回复。" }
     );
   }
@@ -56,20 +61,20 @@ export function n9rtzMessages(case01: GameState["case01"]): Msg[] {
   return base;
 }
 
-export function shioMessages(case02Done: boolean, case03Done: boolean): Msg[] {
+export function shioMessages(case02Done: boolean, case03Done: boolean, shioSender = "汐泊诺思"): Msg[] {
   const msgs: Msg[] = [
     { id: "s1", from: "system", kind: "divider", text: "最近 208 天，每晚 23:58 收到同一条消息：今天也是第一次见你。" },
-    { id: "s2", from: "them", name: "汐泊诺思", text: "今天也是第一次见你。", time: "23:58", status: "unread" },
+    { id: "s2", from: "them", name: shioSender, text: "今天也是第一次见你。", time: "23:58", status: "unread" },
     { id: "s3", from: "system", kind: "ghost", text: "消息显示「未读」，但她的状态是「刚刚在线」。" },
   ];
   if (case02Done) {
     msgs.push(
-      { id: "s4", from: "system", kind: "warn", text: "平台公告：汐泊诺思账号状态异常，已迁移至冷备份服务器。该账号暂不可直接联系。", time: "现在" }
+      { id: "s4", from: "system", kind: "warn", text: `平台公告：${shioSender}账号状态异常，已迁移至冷备份服务器。该账号暂不可直接联系。`, time: "现在" }
     );
   }
   if (case03Done) {
     msgs.push(
-      { id: "s5", from: "system", kind: "ghost", text: "冷备份破拆后，汐泊诺思账号状态变为「离线（用户主动）」。她没有再发来新的消息。" },
+      { id: "s5", from: "system", kind: "ghost", text: `冷备份破拆后，${shioSender}账号状态变为「离线（用户主动）」。她没有再发来新的消息。` },
       { id: "s6", from: "system", kind: "ghost", text: "冷备份确认：208 条「今天也是第一次见你。」的发送者，一直是同一个人——她每晚都在对不认识她的你说这句话。" }
     );
   }
@@ -609,6 +614,7 @@ export const SEARCH_INDEX: { terms: string[]; recId: string }[] = [
   { terms: ["文化基金", "资金", "财务"], recId: "rec-hz-fund" },
   { terms: ["汐泊诺思"], recId: "rec-shio-profile" },
   { terms: ["歌单", "汐泊与零"], recId: "rec-playlist" },
+  { terms: ["歌词", "潮汐", "夜航", "别等", "天亮以后", "未读", "已读"], recId: "rec-playlist" },
   { terms: ["冷备份", "封存"], recId: "rec-cold-backup" },
   { terms: ["质检", "回访", "客服"], recId: "rec-qa-1" },
   { terms: ["质检", "回访", "客服"], recId: "rec-qa-2" },
@@ -641,6 +647,24 @@ export const PLAYLIST_TRACKS = [
   "12 别等",
   "13 第一次",
   "14 天亮以后",
+];
+
+/** 歌单 14 首曲目的歌词（与剧情呼应；歌词关键词可被全局检索命中，实现与主线连接） */
+export const PLAYLIST_LYRICS: { track: string; lines: string[] }[] = [
+  { track: "01 潮汐", lines: ["每晚 23:58，潮水准时漫上窗台。", "同一句话，说了一百遍，", "像退潮后留在沙滩上的字——没有人读。"], },
+  { track: "02 零", lines: ["四格信号少了一格。", "剩下的一格，还在为谁亮着？", "零号档案，没有名字，只有第一次登录的日期。"], },
+  { track: "03 夜航", lines: ["凌晨三点，两个人的航线。", "电话那头是唯一的灯。", "我说，把灯留到天亮。"], },
+  { track: "04 信号", lines: ["信号要断了。", "我去弄一下路由器。", "别去。——这句，我从没来得及听完。"], },
+  { track: "05 断线", lines: ["04:08，一切停在 04:08。", "通话中断，系统归因：网络波动。", "网络波动，可以撤回复核。"], },
+  { track: "06 房间", lines: ["你的房间还亮着灯。", "被迁移的人，房间都封存在冷备份里。", "灯是假的，人也是假的——除了想念。"], },
+  { track: "07 回声", lines: ["回声 ECHOS：别让重要的人掉线。", "每条消息都会回来一个回声。", "只有我的消息，像扔进井里。"], },
+  { track: "08 04:08", lines: ["如果有一天你不再上线，", "我会把歌单听完。", "在 04:08 之前，把每一首听完。"], },
+  { track: "09 未读", lines: ["208 条，全部未读。", "她说：他一定是太忙了。", "我说：我看见了，一条都没读。"], },
+  { track: "10 已读", lines: ["蓝色双勾，已读。", "已读不回，208 天。", "已读，是最后一句没有说出口的话。"], },
+  { track: "11 刚刚在线", lines: ["状态显示：刚刚在线。", "一个 208 天没上过线的人，", "怎么会刚刚在线？", "你看到的在线，是谁在替你在线？"], },
+  { track: "12 别等", lines: ["有人在等一个不会回复的人。", "别等了。", "她的告别，和歌单一起，被锁在冷备份里。"], },
+  { track: "13 第一次", lines: ["今天也是第一次见你。", "第一次，第二次，第一百次。", "只要我不记得你，", "我们就能一直第一次见面。"], },
+  { track: "14 天亮以后", lines: ["天亮了，账号注销了。", "第 209 条消息：晚安，不再是第一次见你。", "天亮以后，掉线不再是终点。"], },
 ];
 
 export function endingAvailable(g: GameState): boolean {
