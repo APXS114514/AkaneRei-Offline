@@ -121,6 +121,44 @@ generate("stem-crash.wav", 6.0, (out, n, rng) => {  for (let i = 0; i < n; i++) 
   }
 });
 
+console.log("生成界面音效（消息提示 / 证据确认 / 监视噪音）：");
+
+/* ⑧ 消息提示音：两声轻柔的短提示（首次登录信息窗弹出时播放一次） */
+generate("ui-message.wav", 0.9, (out, n) => {
+  const tone = (t, f) => Math.sin(2 * Math.PI * f * t) * Math.exp(-7 * t);
+  for (let i = 0; i < n; i++) {
+    const t = i / SAMPLE_RATE;
+    let v = 0;
+    const d1 = t - 0.02;
+    if (d1 >= 0 && d1 < 0.35) v += tone(d1, 880) * 0.5;
+    const d2 = t - 0.16;
+    if (d2 >= 0 && d2 < 0.45) v += tone(d2, 1318) * 0.42;
+    out[i] = v;
+  }
+});
+
+/* ⑨ 证据确认提示：独立的低音确认音（新证据写入调查台账时播放，重复核验不播放） */
+generate("ui-evidence.wav", 0.9, (out, n) => {
+  for (let i = 0; i < n; i++) {
+    const t = i / SAMPLE_RATE;
+    let v = Math.sin(2 * Math.PI * 82 * t) * Math.exp(-9 * t) * 0.85;
+    const d2 = t - 0.28;
+    if (d2 >= 0 && d2 < 0.5) v += Math.sin(2 * Math.PI * 62 * d2) * Math.exp(-7 * d2) * 0.6;
+    out[i] = v;
+  }
+});
+
+/* ⑩ 监视低频噪音：零信号演出「返回」按钮第二次点击时的一声低频噪音 */
+generate("ui-surveillance-noise.wav", 0.7, (out, n, rng) => {
+  let low = 0;
+  for (let i = 0; i < n; i++) {
+    const t = i / SAMPLE_RATE;
+    low = low * 0.92 + (rng() * 2 - 1) * 0.14;
+    const env = Math.exp(-5 * t);
+    out[i] = low * env * 0.9 + (rng() * 2 - 1) * 0.05 * env;
+  }
+});
+
 // ⑤ 汐泊诺思告别语音：已由 Windows 中文语音（Microsoft Huihui）合成，
 //   见 public/audio/STEM_SOURCES.md。不要用占位哼唱覆盖该文件。
 

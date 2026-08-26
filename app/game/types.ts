@@ -114,6 +114,7 @@ export interface GameState {
   nickname: string;
   gameFinished: boolean;
   bgmMuted: boolean;
+  welcomeShown: boolean;
   surveillanceSeen: Record<string, boolean>;
   lastRoute: string;
 }
@@ -137,6 +138,7 @@ export const initialGame: GameState = {
   nickname: "",
   gameFinished: false,
   bgmMuted: false,
+  welcomeShown: false,
   surveillanceSeen: {},
   lastRoute: "#/wake",
 };

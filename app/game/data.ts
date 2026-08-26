@@ -8,8 +8,8 @@ export const CONVS: Conv[] = [
   { id: "echo-assist", name: "回声小助手", kind: "bot", color: "#8a94a0", initials: "回", avatar: "/avatars/echo-assist.svg", status: "刚刚在线", preview: "欢迎使用回声 ECHOS", time: "04:08" },
 ];
 
-export function groupMessages(): Msg[] {
-  return [
+export function groupMessages(ending: GameState["ending"] = "none"): Msg[] {
+  const msgs: Msg[] = [
     { id: "g0", from: "system", kind: "warn", text: "群公告已被替换为《连接与断开守则》节选，原公告无法查看。", time: "04:08" },
     { id: "g1", from: "them", name: "汐泊诺思", text: "今天也是第一次见你。", time: "23:58", status: "unread" },
     { id: "g2", from: "them", name: "Roy", text: "回声 ECHOS 版本更新预告：本次将优化消息同步稳定性，敬请期待。", time: "04:03" },
@@ -19,6 +19,19 @@ export function groupMessages(): Msg[] {
     { id: "g6", from: "system", kind: "ghost", text: "用户「已注销用户」已退出全员群。", time: "04:07" },
     { id: "g7", from: "system", kind: "divider", text: "所有消息停留在 04:08。云端同步完成后，这里将不会出现新的内容。" },
   ];
+  if (ending === "good") {
+    msgs.push(
+      { id: "g8", from: "them", name: "汐泊诺思", text: "晚安，不再是第一次见你。", time: "23:58", kind: "abnormal" },
+      { id: "g9", from: "system", kind: "ghost", text: "该账号已注销，联系人已解除关联。04:08 之后，账号没有回来。" }
+    );
+  }
+  if (ending === "bad") {
+    msgs.push(
+      { id: "g8b", from: "them", name: "汐泊诺思", text: "今天也是第一次见你。", time: "23:58" },
+      { id: "g9b", from: "system", kind: "ghost", text: "第 209 次「第一次」。这一次，她不再期待回复。" }
+    );
+  }
+  return msgs;
 }
 
 export function n9rtzMessages(case01: GameState["case01"]): Msg[] {
@@ -71,11 +84,17 @@ export function luvisMessages(): Msg[] {
   ];
 }
 
-export function echoAssistMessages(): Msg[] {
-  return [
+export function echoAssistMessages(reviewReady: boolean): Msg[] {
+  const msgs: Msg[] = [
     { id: "e1", from: "them", name: "回声小助手", text: "欢迎使用回声 ECHOS。\n本平台坚持「别让重要的人掉线」。\n若你记得不该记得的事，请点击这里忘记。", time: "04:08", kind: "abnormal" },
     { id: "e2", from: "system", kind: "ghost", text: "该账号自 208 天前添加你以来，从未真正回复过任何问题。状态始终是「正在输入…」。" },
   ];
+  if (reviewReady) {
+    msgs.push(
+      { id: "e3", from: "system", kind: "warn", text: "平台质检系统：有一条仅当前会话可读的复核请求。该请求不出现在检索索引中，请在消息列表的通知入口打开。" }
+    );
+  }
+  return msgs;
 }
 export const RECORDS: Record<string, GameRecord> = {
   "rec-n9rtz-profile": {
@@ -94,6 +113,24 @@ export const RECORDS: Record<string, GameRecord> = {
       { k: "账号状态", v: "在线" },
       { k: "最后消息", v: "2026-04-08 04:07「你还在吗？」（已读）" },
       { k: "最后活跃", v: "04:09（随后 208 天未发言）" },
+    ],
+  },
+  "rec-n9rtz-conv": {
+    id: "rec-n9rtz-conv",
+    kind: "会话",
+    chapter: "case01",
+    title: "N9Rtz 会话（事故夜后空白）",
+    source: "回声 ECHOS · 私信 · 2026-04-08 之后未更新",
+    snippet: "最后一条消息 2026-04-08 04:07「你还在吗？」显示蓝色双勾已读。此后 208 天空白。",
+    body: [
+      "与 N9Rtz 的最后一条消息停留在 2026-04-08 04:07：",
+      "「你还在吗？」——已读（蓝色双勾），没有回复。",
+      "此后是 208 天的空白。对方的状态始终显示「在线」，但从未再发言。",
+    ],
+    fields: [
+      { k: "最后消息", v: "2026-04-08 04:07「你还在吗？」（已读）" },
+      { k: "空白时长", v: "208 天" },
+      { k: "对方状态", v: "在线 · 未发言" },
     ],
   },
   "rec-drop-record": {
@@ -384,19 +421,61 @@ export const RECORDS: Record<string, GameRecord> = {
     ],
     require: (g) => g.openedRecords.includes("rec-playlist"),
   },
-  "rec-quality-audit": {
-    id: "rec-quality-audit",
+  "rec-qa-1": {
+    id: "rec-qa-1",
     kind: "质检回访",
     chapter: "case04",
-    title: "平台客服质检回访记录",
+    title: "质检回访 · 第一段：N9Rtz 事故夜通话",
     source: "回声 ECHOS · 质检系统",
-    snippet: "四段回访：N9Rtz 通话回放、LuvisDrug 私信、汐泊诺思问候、平台客服记录。",
+    snippet: "事故夜通话质检回放：话术偏离标准流程，坐席多次停顿。",
     body: [
-      "第一段 · N9Rtz 事故夜通话质检回放：话术偏离标准流程，坐席多次停顿。",
-      "第二段 · LuvisDrug 注销前最后的私信质检：坐席未按要求终止对话。",
-      "第三段 · 汐泊诺思日常问候质检：坐席重复「第一次接触」话术 208 次。",
-      "第四段 · 平台客服质检记录：字段显示「该账号 208 天未掉线」「联系人持续存在」。",
-      "四段回访中的客服坐席使用了同一套工号字段。",
+      "第一段 · N9Rtz 事故夜通话质检回放。",
+      "通话时长 68 分钟，中断于 04:08。",
+      "质检标注：坐席话术偏离标准流程，多次长时间停顿；未按规范引导用户重启设备。",
+      "回放末尾有一段未归类的人声残响，质检系统未作结论。",
+    ],
+    require: (g) => g.case01 === "done",
+  },
+  "rec-qa-2": {
+    id: "rec-qa-2",
+    kind: "质检回访",
+    chapter: "case04",
+    title: "质检回访 · 第二段：LuvisDrug 注销前私信",
+    source: "回声 ECHOS · 质检系统",
+    snippet: "注销前最后的私信质检：坐席未按要求终止对话。",
+    body: [
+      "第二段 · LuvisDrug 注销前最后的私信质检。",
+      "坐席在对话中主动提及「迁移」「冷备份」等内部字段，未按要求在检测到异常后终止对话。",
+      "质检结论：流程违规。处置记录创建时间早于注销申请 3 天，未见人工复核痕迹。",
+    ],
+    require: (g) => g.case02 !== "none",
+  },
+  "rec-qa-3": {
+    id: "rec-qa-3",
+    kind: "质检回访",
+    chapter: "case04",
+    title: "质检回访 · 第三段：汐泊诺思日常问候",
+    source: "回声 ECHOS · 质检系统",
+    snippet: "日常问候质检：坐席重复「第一次接触」话术 208 次。",
+    body: [
+      "第三段 · 汐泊诺思日常问候质检。",
+      "每晚 23:58 一条问候，坐席连续 208 次重复「第一次接触」话术，从未标记为重复联系人。",
+      "质检系统未对该异常发出任何告警。",
+    ],
+    require: (g) => g.case02 === "done",
+  },
+  "rec-qa-4": {
+    id: "rec-qa-4",
+    kind: "质检回访",
+    chapter: "case04",
+    title: "质检回访 · 第四段：平台客服记录",
+    source: "回声 ECHOS · 质检系统 · 冷备份解锁",
+    snippet: "字段显示「该账号 208 天未掉线」「联系人持续存在」。四段回访共用同一套工号字段。",
+    body: [
+      "第四段 · 平台客服质检记录。",
+      "字段：「该账号 208 天未掉线」「联系人持续存在」。",
+      "四段回访（N9Rtz 通话、LuvisDrug 私信、汐泊诺思问候、本记录）中的客服坐席使用了同一套工号字段。",
+      "该记录仅在冷备份破拆后开放读取。",
     ],
     require: (g) => g.case03 === "done",
   },
@@ -410,6 +489,28 @@ export const RECORDS: Record<string, GameRecord> = {
     body: [
       "请只抄录以下原始字段，不要选择任何结论。",
       "提交后，平台将尝试覆盖联系人关系、账号主体与「未断连接」的含义。",
+    ],
+    require: (g) => g.aka0Confirmed,
+  },
+  "rec-aka0-archive": {
+    id: "rec-aka0-archive",
+    kind: "复核归档",
+    chapter: "case04",
+    title: "Aka-0 账号身份复核归档",
+    source: "回声 ECHOS · 账号身份复核 · 只读归档",
+    snippet: "人工复核提交后生成的只读归档：Aka-0 与当前账号的身份关系判断及其依据。",
+    body: [
+      "复核已完成，本归档为只读，不再接受修改。",
+      "Aka-0 是谁：晓茜。",
+      "AkaneRei 账号状态：已死亡。",
+      "汐泊诺思与 AkaneRei 的关系：紧急联系人（材料可证明的原始字段）。",
+      "归档保存玩家的人工判断及其依据，不解释「同一意识」或循环机制。",
+    ],
+    fields: [
+      { k: "Aka-0 是谁", v: "晓茜" },
+      { k: "AkaneRei 账号状态", v: "已死亡" },
+      { k: "汐泊诺思与 AkaneRei 的关系", v: "紧急联系人" },
+      { k: "归档类型", v: "只读（人工复核提交后生成）" },
     ],
     require: (g) => g.aka0Confirmed,
   },
@@ -487,6 +588,7 @@ export const RECORDS: Record<string, GameRecord> = {
 };
 
 export const SEARCH_INDEX: { terms: string[]; recId: string }[] = [
+  { terms: ["N9Rtz"], recId: "rec-n9rtz-conv" },
   { terms: ["N9Rtz"], recId: "rec-n9rtz-profile" },
   { terms: ["04:08", "断线", "中断"], recId: "rec-drop-record" },
   { terms: ["语音", "通话记录", "通话"], recId: "rec-call-record" },
@@ -499,8 +601,12 @@ export const SEARCH_INDEX: { terms: string[]; recId: string }[] = [
   { terms: ["汐泊诺思"], recId: "rec-shio-profile" },
   { terms: ["歌单", "汐泊与零"], recId: "rec-playlist" },
   { terms: ["冷备份", "封存"], recId: "rec-cold-backup" },
-  { terms: ["质检", "回访", "客服"], recId: "rec-quality-audit" },
+  { terms: ["质检", "回访", "客服"], recId: "rec-qa-1" },
+  { terms: ["质检", "回访", "客服"], recId: "rec-qa-2" },
+  { terms: ["质检", "回访", "客服"], recId: "rec-qa-3" },
+  { terms: ["质检", "回访", "客服"], recId: "rec-qa-4" },
   { terms: ["人工校验", "账号来源"], recId: "rec-identity-check" },
+  { terms: ["Aka-0"], recId: "rec-aka0-archive" },
   { terms: ["守则", "用户协议", "连接一致性"], recId: "rec-rules" },
   { terms: ["维护", "公告"], recId: "rec-plat-notice" },
   { terms: ["快递", "驿站", "取件"], recId: "rec-express" },
@@ -539,11 +645,12 @@ export function endingAvailable(g: GameState): boolean {
   );
 }
 
-/** 隐藏复核页的入口条件：四段质检回访与事故报道已读，且 CASE 03 完成 */
+/** 隐藏复核页的入口条件：四段质检回访与事故报道、《连接与断开守则》已读，且 CASE 03 完成 */
 export function reviewReady(g: GameState): boolean {
   return (
     g.case03 === "done" &&
-    g.openedRecords.includes("rec-quality-audit") &&
-    g.openedRecords.includes("rec-accident")
+    ["rec-qa-1", "rec-qa-2", "rec-qa-3", "rec-qa-4", "rec-accident", "rec-rules"].every((id) =>
+      g.openedRecords.includes(id)
+    )
   );
 }

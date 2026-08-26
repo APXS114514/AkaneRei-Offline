@@ -2,9 +2,9 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-/** 合并读取游戏源码（page + game 模块），供内容契约断言 */
+/** 合并读取游戏源码（page + game 模块 + 音效模块），供内容契约断言 */
 async function readGameSource() {
-  const files = ["app/page.tsx", "app/game/types.ts", "app/game/data.ts", "app/game/components.tsx"];
+  const files = ["app/page.tsx", "app/game/types.ts", "app/game/data.ts", "app/game/components.tsx", "app/game/sound.ts"];
   const parts = [];
   for (const f of files) {
     parts.push(await readFile(new URL(`../${f}`, import.meta.url), "utf8"));
@@ -201,4 +201,56 @@ test("truth page is a separate static route with spoiler warning", async () => {
   assert.match(html, /全案真相/);
   assert.match(html, /完整剧透/);
   assert.match(html, /为了不断线而死/);
+});
+
+test("v0.4 flow gaps: welcome window, evidence confirm, Aka-0 archive, QA segments, camera, re-choice", async () => {
+  const page = await readGameSource();
+
+  // 首次登录信息窗（§0.6）：3 秒安静 → 消息提示音 → 摘要弹窗，仅全新存档
+  assert.match(page, /welcomeShown/);
+  assert.match(page, /WelcomeInfoWindow/);
+  assert.match(page, /setShowWelcome\(true\), 3000/);
+  assert.match(page, /ui-message\.wav/);
+
+  // 新证据写入台账的低音确认提示（重复核验/刷新不播放）
+  assert.match(page, /playEvidenceConfirm/);
+  assert.match(page, /prev === null\) return; \/\/ 首次挂载（含刷新恢复）不播放/);
+  assert.match(page, /ui-evidence\.wav/);
+
+  // 零信号监视演出（§2.2）：返回按钮延迟出现、第二次点击低频噪音、第三次返回
+  assert.match(page, /setShowEscape\(true\), 1400/);
+  assert.match(page, /playSurveillanceNoise/);
+  assert.match(page, /ui-surveillance-noise\.wav/);
+  assert.match(page, /没有找到完全匹配的记录/);
+
+  // Aka-0 暗线（§4.3）：确认后精确检索只返回只读归档
+  assert.match(page, /Aka-0 账号身份复核归档/);
+  assert.match(page, /hit === "Aka-0" && game\.aka0Confirmed/);
+
+  // 四段质检回访随主线逐步开放
+  for (const id of ["rec-qa-1", "rec-qa-2", "rec-qa-3", "rec-qa-4"]) {
+    assert.match(page, new RegExp(id));
+  }
+  assert.match(page, /g\.case01 === "done"/); // 第一段：CASE 01 后
+  assert.match(page, /该账号 208 天未掉线/);  // 第四段：冷备份解锁内容
+
+  // 摄像头身份核验（§2.5）：拒绝/缺失/超时走历史特征回退，不阻断
+  assert.match(page, /getUserMedia/);
+  assert.match(page, /历史特征回退/);
+
+  // 账号安全中心「账号来源与同名主体复核」（§4.1）
+  assert.match(page, /账号来源与同名主体复核/);
+
+  // 重新选择结局返回注销页（§5），而非直接切换另一结局
+  assert.match(page, /onChoose\("none"\)/);
+
+  // 全平台默认无背景音乐，只保留消息提示音（故事大纲 §60 / 流程验证点）
+  assert.match(page, /return themed \? "rain" : "none"/);
+
+  // N9Rtz 检索返回会话 + 资料卡（§1.2 / 检索范围表）
+  assert.match(page, /N9Rtz 会话（事故夜后空白）/);
+
+  // 软锁回归：CASE 02 完成后平台不再接受残留账号凭据（防止 case02 降级导致歌单/质检/事故门槛锁死）
+  assert.match(page, /该残留账号已在身份侦测中断开/);
+  assert.match(page, /r\.name === "legacy" && \(!game\.luvisLogin \|\| game\.case02 === "done"\)/);
 });

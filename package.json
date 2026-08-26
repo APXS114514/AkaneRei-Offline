@@ -7,6 +7,7 @@
   },
   "scripts": {
     "audio:generate": "node scripts/generate-stems.mjs",
+    "verify:flow": "tsx scripts/verify-flow.ts",
     "dev": "vinext dev",
     "build": "vinext build",
     "build:pages": "cross-env GITHUB_PAGES=true NEXT_PUBLIC_BASE_PATH=/AkaneRei-Offline NEXT_PUBLIC_SITE_URL=https://apxs114514.github.io/AkaneRei-Offline/ next build",

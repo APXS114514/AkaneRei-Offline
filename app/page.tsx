@@ -41,8 +41,11 @@ import {
   ReviewPage,
   RulesAppender,
   StemPuzzle,
+  SurveillanceScreen,
   TimelineBoard,
+  WelcomeInfoWindow,
 } from "./game/components";
+import { playEvidenceConfirm } from "./game/sound";
 
 export default function Page() {
   const [game, setGame] = useState<GameState>(() => readSavedGame());
@@ -55,9 +58,15 @@ export default function Page() {
   const [loginFlash, setLoginFlash] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [lastSearch, setLastSearch] = useState("");
-  const [survEscapeHits, setSurvEscapeHits] = useState(0);
+  const [survPending, setSurvPending] = useState<string | null>(null);
+  const [survCount, setSurvCount] = useState(0);
+  const [showWelcome, setShowWelcome] = useState(false);
   const [confirmReset, setConfirmReset] = useState(false);
   const chatBodyRef = useRef<HTMLDivElement>(null);
+  const survTimerRef = useRef<number | null>(null);
+  const survIntervalRef = useRef<number | null>(null);
+  const welcomeTimerRef = useRef<number | null>(null);
+  const prevOpenedRef = useRef<string[] | null>(null);
 
   const applyRoute = useCallback((r: Route) => {
     window.location.hash = routeToHash(r);
@@ -81,6 +90,54 @@ export default function Page() {
   useEffect(() => {
     chatBodyRef.current?.scrollTo({ top: chatBodyRef.current.scrollHeight });
   }, [route]);
+
+  /* 新证据写入调查台账时播放一次独立的低音确认提示；刷新/恢复旧存档不重复播放 */
+  useEffect(() => {
+    const prev = prevOpenedRef.current;
+    prevOpenedRef.current = game.openedRecords;
+    if (prev === null) return; // 首次挂载（含刷新恢复）不播放
+    const added = game.openedRecords.filter((id) => !prev.includes(id));
+    const hasCaseEvidence = added.some((id) => {
+      const rec = RECORDS[id];
+      return rec && rec.chapter !== "meta";
+    });
+    if (hasCaseEvidence) playEvidenceConfirm();
+  }, [game.openedRecords]);
+
+  /* 监视演出：检索期间反复追加「没有找到完全匹配的记录」 */
+  useEffect(() => {
+    if (!survPending) {
+      setSurvCount(0);
+      return;
+    }
+    setSurvCount(0);
+    survIntervalRef.current = window.setInterval(() => {
+      setSurvCount((c) => (c < 5 ? c + 1 : c));
+    }, 420);
+    return () => {
+      if (survIntervalRef.current) window.clearInterval(survIntervalRef.current);
+    };
+  }, [survPending]);
+
+  /* 首次登录信息窗：全新存档进入首页后约 3 秒安静，再播放一次消息提示音并弹出摘要 */
+  useEffect(() => {
+    const fresh = !game.welcomeShown && game.openedRecords.length === 0 && game.case01 === "none";
+    if (route.name === "home" && game.loggedIn && fresh) {
+      welcomeTimerRef.current = window.setTimeout(() => setShowWelcome(true), 3000);
+      return () => {
+        if (welcomeTimerRef.current) window.clearTimeout(welcomeTimerRef.current);
+      };
+    }
+  }, [route.name, game.loggedIn, game.welcomeShown, game.openedRecords.length, game.case01]);
+
+  useEffect(
+    () => () => {
+      if (survTimerRef.current) window.clearTimeout(survTimerRef.current);
+      if (survIntervalRef.current) window.clearInterval(survIntervalRef.current);
+      if (welcomeTimerRef.current) window.clearTimeout(welcomeTimerRef.current);
+    },
+    []
+  );
 
   const openRecord = useCallback((recId: string) => {
     setGame((g) => {
@@ -171,18 +228,34 @@ export default function Page() {
 
   const doSearch = (raw: string) => {
     const q = raw.trim();
-    setLastSearch(q);
     setSearchQuery(q);
-    if (!q) return;
-    const hit = SURVEILLANCE_TERMS.find((t) => q.includes(t));
-    if (hit) {
-      applyRoute({ name: "surveillance", source: hit });
-      setGame((g) => ({
-        ...g,
-        surveillanceSeen: { ...g.surveillanceSeen, [hit]: true },
-      }));
+    if (!q) {
+      setLastSearch("");
       return;
     }
+    const hit = SURVEILLANCE_TERMS.find((t) => q.includes(t));
+    if (hit) {
+      // Aka-0：人工复核提交后，精确检索只返回《Aka-0 账号身份复核归档》
+      if (hit === "Aka-0" && game.aka0Confirmed) {
+        setSurvPending(null);
+        setLastSearch(q);
+        return;
+      }
+      // 监视演出：先反复追加「没有找到完全匹配的记录」，再被灰色波形接管
+      setLastSearch("");
+      setSurvPending(hit);
+      if (survTimerRef.current) window.clearTimeout(survTimerRef.current);
+      survTimerRef.current = window.setTimeout(() => {
+        setSurvPending(null);
+        applyRoute({ name: "surveillance", source: hit });
+        setGame((g) => ({
+          ...g,
+          surveillanceSeen: { ...g.surveillanceSeen, [hit]: true },
+        }));
+      }, 2800);
+      return;
+    }
+    setSurvPending(null);
     setLastSearch(q);
   };
 
@@ -215,7 +288,7 @@ export default function Page() {
         window.location.hash = "#/app/home";
         return;
       }
-      if (r.name === "legacy" && !game.luvisLogin) {
+      if (r.name === "legacy" && (!game.luvisLogin || game.case02 === "done")) {
         window.location.hash = "#/app/home";
         return;
       }
@@ -240,26 +313,35 @@ export default function Page() {
   const renderWake = () => (
     <div className="opening">
       <div className="opening-phone" aria-hidden="true">
-        <div className="opening-msg">
-          <div className="bubble them">
-            <span className="sender">汐泊诺思</span>
-            今天也是第一次见你。
+        <div className="opening-scene">
+          <div className="opening-msg">
+            <div className="bubble them">
+              <span className="sender">全员群 · APXS</span>
+              楼下新开的奶茶店第二杯半价，有人拼单吗？
+            </div>
+          </div>
+          <div className="opening-msg">
+            <div className="bubble them">
+              <span className="sender">全员群 · Rtwyzz</span>
+              路过。你们不觉得最近群里的时间都不对劲吗
+            </div>
+          </div>
+          <div className="opening-msg">
+            <div className="bubble me">哈哈哈你们别闹了</div>
           </div>
         </div>
-        <div className="opening-msg">
-          <div className="bubble me">哈哈哈你们别闹了</div>
-        </div>
-        <div className="opening-msg">
-          <div className="bubble them">
-            <span className="sender">N9Rtz</span>
-            夜深了。通宵语音吗？
+        <div className="opening-share">
+          <div className="share-icon">🎵</div>
+          <div className="share-meta">
+            <b>汐泊诺思 分享了歌单</b>
+            <span>汐泊与零的歌单 · 14 首 · 「如果有一天你不再上线，我会把歌单听完。」</span>
           </div>
         </div>
         <div className="opening-call">
           <div className="avatar">N</div>
           <div className="call-meta">
             <b>N9Rtz</b>
-            <span>00:04:08 · 通话中</span>
+            <span>00:04:08 · 通话中 · 深夜语音</span>
           </div>
         </div>
       </div>
@@ -424,6 +506,14 @@ export default function Page() {
           </div>
         </div>
       )}
+      {game.identityCheck && game.memoryBlocked && game.ending === "none" && (
+        <div className="home-notices">
+          <div className="home-notice warn">
+            <b>04:08 强制退出倒计时</b>
+            <span>平台已将账号降为只读，并预告 04:08 强制退出。你保留着「自己已死、朋友在等你下线」的关系记忆。</span>
+          </div>
+        </div>
+      )}
       {endingAvailable(game) && game.ending === "none" && (
         <div className="home-notices">
           <div className="home-notice">
@@ -497,11 +587,11 @@ export default function Page() {
     if (!conv) return <div className="chat-blank">会话不存在。</div>;
     let msgs: Msg[] = [];
     const headerStatus = conv.status;
-    if (conv.id === "everyone") msgs = groupMessages();
+    if (conv.id === "everyone") msgs = groupMessages(game.ending);
     if (conv.id === "n9rtz") msgs = n9rtzMessages(game.case01);
     if (conv.id === "shio") msgs = shioMessages(game.case02 === "done", game.case03 === "done");
     if (conv.id === "luvis") msgs = luvisMessages();
-    if (conv.id === "echo-assist") msgs = echoAssistMessages();
+    if (conv.id === "echo-assist") msgs = echoAssistMessages(reviewReady(game) && !game.aka0Confirmed);
     const effectiveStatus =
       conv.id === "shio" && game.case03 === "done" ? "离线（用户主动）" : headerStatus;
     return (
@@ -565,21 +655,36 @@ export default function Page() {
           className="input-field"
           placeholder="搜索聊天记录、联系人、关键词…"
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(e) => {
+            setSearchQuery(e.target.value);
+            if (survPending) {
+              // 输入其他关键词即可中断监视演出
+              setSurvPending(null);
+              if (survTimerRef.current) window.clearTimeout(survTimerRef.current);
+            }
+          }}
           onKeyDown={(e) => e.key === "Enter" && doSearch(searchQuery)}
           aria-label="搜索聊天记录"
         />
         <button className="primary-button" onClick={() => doSearch(searchQuery)}>检索</button>
       </div>
       <div className="search-note">不要按顺序读。按你怀疑的内容去找。</div>
-      {searchResults === null && <div className="search-hint">试试：N9Rtz、04:08、录音、LuvisDrug、汐泊诺思、事故</div>}
-      {searchResults?.kind === "empty" && (
+      {survPending && (
+        <div className="search-surv" key={survPending}>
+          {Array.from({ length: survCount }).map((_, i) => (
+            <p key={i} className="surv-line">没有找到完全匹配的记录。</p>
+          ))}
+          <p className="surv-typing">正在检索 {survPending} ……</p>
+        </div>
+      )}
+      {!survPending && searchResults === null && <div className="search-hint">试试：N9Rtz、04:08、录音、LuvisDrug、汐泊诺思、事故</div>}
+      {!survPending && searchResults?.kind === "empty" && (
         <div className="search-empty">
           没有找到与「{searchResults.q}」完全匹配的记录。<br />
           换一个词试试。
         </div>
       )}
-      {searchResults?.kind === "results" && (
+      {!survPending && searchResults?.kind === "results" && (
         <div className="search-results">
           {searchResults.recs.map((r) => (
             <button key={r.id} className="record-card" onClick={() => goTo({ name: "article", recId: r.id })}>
@@ -626,13 +731,19 @@ export default function Page() {
             <StemPuzzle done={game.case01Stems} onDone={() => finishCase01Puzzle("stems")} />
           )}
           {recId === "rec-luvisdrug-profile" && (
-            <LegacyLogin
-              done={game.luvisLogin}
-              onSuccess={() => {
-                setGame((g) => ({ ...g, luvisLogin: true, case02: "partial" }));
-                applyRoute({ name: "legacy" });
-              }}
-            />
+            game.case02 === "done" ? (
+              <div className="puzzle-feedback right" style={{ marginTop: 14 }}>
+                该残留账号已在身份侦测中断开。平台不再接受该凭据，本地证据模块已关闭。
+              </div>
+            ) : (
+              <LegacyLogin
+                done={game.luvisLogin}
+                onSuccess={() => {
+                  setGame((g) => ({ ...g, luvisLogin: true, case02: "partial" }));
+                  applyRoute({ name: "legacy" });
+                }}
+              />
+            )
           )}
           {recId === "rec-rules" && <RulesAppender />}
           {recId === "rec-playlist" && (
@@ -730,6 +841,27 @@ export default function Page() {
         <div className="settings-row"><span className="k">状态</span><span className="v">在线 · 208 天未掉线</span></div>
         <div className="settings-row"><span className="k">云端同步</span><span className="v abnormal" style={{ color: "var(--danger)" }}>04:08 自动执行</span></div>
       </div>
+      {reviewReady(game) && !game.aka0Confirmed && (
+        <div className="settings-card card">
+          <h3>账号来源与同名主体复核</h3>
+          <p>
+            系统把「注销申请」转派给被核查的账号本人，并警告不得建立私人关系。
+            复核请求仅当前会话可读，未收录于检索索引。
+          </p>
+          <button className="primary-button" style={{ width: "100%" }} onClick={() => goTo({ name: "review" })}>
+            进入复核 →
+          </button>
+        </div>
+      )}
+      {game.aka0Confirmed && (
+        <div className="settings-card card">
+          <h3>账号来源与同名主体复核</h3>
+          <p>已完成。复核归档只读保存了人工判断及其依据。</p>
+          <button className="text-button" onClick={() => goTo({ name: "article", recId: "rec-aka0-archive" })}>
+            查看《Aka-0 账号身份复核归档》 →
+          </button>
+        </div>
+      )}
       <div className="settings-card card">
         <h3>注销账号</h3>
         <p>
@@ -773,45 +905,15 @@ export default function Page() {
     </div>
   );
 
-  const renderSurveillance = (source: string) => {
-    const dodged = survEscapeHits >= 2;
-    return (
-      <div className="surveillance" key={source}>
-        <div className="wave-bars" aria-hidden="true">
-          {[0, 1, 2, 3, 4, 5].map((i) => (
-            <i
-              key={i}
-              className={source === "零信号" ? "on" : ""}
-              style={{ height: [36, 72, 100, 84, 52, 30][i], animationDelay: `${i * 0.14}s` }}
-            />
-          ))}
-        </div>
-        <div className="typing">正在输入{source}…</div>
-        <div className="eyes-row" aria-hidden="true">
-          <div className="eye" style={{ animationDelay: "0s" }} />
-          <div className="eye" style={{ animationDelay: "0.6s" }} />
-          <div className="eye" style={{ animationDelay: "1.3s" }} />
-          <div className="eye" style={{ animationDelay: "2.1s" }} />
-        </div>
-        <button
-          className="escape"
-          style={dodged ? undefined : { transform: `translate(${survEscapeHits === 0 ? -26 : 22}px, ${survEscapeHits === 0 ? 8 : -10}px)` }}
-          onClick={() => {
-            if (survEscapeHits < 2) {
-              setSurvEscapeHits((n) => n + 1);
-            } else {
-              setSurvEscapeHits(0);
-              setLastSearch("");
-              applyRoute({ name: "search" });
-            }
-          }}
-        >
-          {dodged ? "返回检索" : "离开"}
-        </button>
-        <div className="foot">ECHOS · 零信号 · 该页面未收录于任何索引</div>
-      </div>
-    );
-  };
+  const renderSurveillance = (source: string) => (
+    <SurveillanceScreen
+      source={source}
+      onExit={() => {
+        setLastSearch("");
+        applyRoute({ name: "search" });
+      }}
+    />
+  );
 
   const renderLegacy = () => (
     <div className="app-shell">
@@ -991,7 +1093,15 @@ export default function Page() {
       <div className="route-view" key={routeKey}>
         {body}
       </div>
-      <AudioLayer game={game} />
+      {showWelcome && (
+        <WelcomeInfoWindow
+          onClose={() => {
+            setShowWelcome(false);
+            setGame((g) => ({ ...g, welcomeShown: true }));
+          }}
+        />
+      )}
+      <AudioLayer game={game} routeName={route.name} />
     </>
   );
 }

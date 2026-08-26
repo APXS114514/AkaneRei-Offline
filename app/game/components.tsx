@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { GameState, Route, SignalBall, SignalObstacle, Stem, TimelineItem } from "./types";
 import { assetPath } from "./types";
 import { RECORDS } from "./data";
+import { playMessageTone, playSurveillanceNoise } from "./sound";
 /* 展示组件 —— 由 app/page.tsx 拆分而来 */
 /* ---------------- CASE 01 谜题：时间线复原 ---------------- */
 
@@ -335,28 +336,85 @@ export function LegacyAccount({
 
 /* ---------------- CASE 02：身份侦测崩坏演出 ---------------- */
 
-type BreachPhase = "identity" | "stillThere" | "wave" | "escape";
+type BreachPhase = "camera" | "identity" | "stillThere" | "wave" | "escape";
 
 export function Breach({ onEscape }: { onEscape: () => void }) {
-  const [phase, setPhase] = useState<BreachPhase>("identity");
+  const [phase, setPhase] = useState<BreachPhase>("camera");
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
+    let fallbackTimer: number | undefined;
+
+    // 摄像头核验：尝试以当前画面执行身份核验；拒绝 / 缺失 / 超时走历史特征回退，不阻断流程
+    const fallback = () => {
+      if (!cancelled) setPhase((p) => (p === "camera" ? "identity" : p));
+    };
+    try {
+      const md = navigator.mediaDevices;
+      if (md && typeof md.getUserMedia === "function") {
+        const p = md.getUserMedia({ video: true });
+        fallbackTimer = window.setTimeout(fallback, 1500);
+        p.then((stream) => {
+          if (cancelled) {
+            stream.getTracks().forEach((t) => t.stop());
+            return;
+          }
+          streamRef.current = stream;
+          const v = videoRef.current;
+          if (v) {
+            v.srcObject = stream;
+            void v.play().catch(() => {});
+          }
+          if (fallbackTimer) window.clearTimeout(fallbackTimer);
+          window.setTimeout(() => {
+            if (!cancelled) {
+              streamRef.current?.getTracks().forEach((t) => t.stop());
+              streamRef.current = null;
+              setPhase((cur) => (cur === "camera" ? "identity" : cur));
+            }
+          }, 1100);
+        }).catch(fallback);
+      } else {
+        fallbackTimer = window.setTimeout(fallback, 1500);
+      }
+    } catch {
+      fallbackTimer = window.setTimeout(fallback, 1500);
+    }
+
     const timers = [
-      window.setTimeout(() => setPhase("stillThere"), 1800),
-      window.setTimeout(() => setPhase("wave"), 3400),
-      window.setTimeout(() => setPhase("escape"), 5200),
+      window.setTimeout(() => setPhase("stillThere"), 3400),
+      window.setTimeout(() => setPhase("wave"), 5000),
+      window.setTimeout(() => setPhase("escape"), 6800),
     ];
-    return () => timers.forEach(clearTimeout);
+    return () => {
+      cancelled = true;
+      timers.forEach(clearTimeout);
+      if (fallbackTimer) window.clearTimeout(fallbackTimer);
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop());
+        streamRef.current = null;
+      }
+    };
   }, []);
 
   const advance = () => {
-    if (phase === "identity") setPhase("stillThere");
-    else if (phase === "stillThere") setPhase("wave");
-    else if (phase === "wave") setPhase("escape");
+    setPhase((p) =>
+      p === "camera" ? "identity" : p === "identity" ? "stillThere" : p === "stillThere" ? "wave" : p === "wave" ? "escape" : p
+    );
   };
 
   return (
     <div className="surveillance breach" onClick={advance}>
+      {phase === "camera" && (
+        <>
+          <div className="breach-line">身份核验</div>
+          <div className="breach-sub">正在请求摄像头，以当前画面执行身份核验……</div>
+          <video ref={videoRef} className="breach-video" autoPlay muted playsInline aria-hidden="true" />
+          <div className="breach-sub fallback">无摄像头 / 拒绝授权 / 超时 → 自动使用历史特征回退，不阻断流程</div>
+        </>
+      )}
       {phase === "identity" && <div className="breach-line">你是谁？</div>}
       {phase === "stillThere" && <div className="breach-line">你还在吗？</div>}
       {phase === "wave" && (
@@ -383,6 +441,89 @@ export function Breach({ onEscape }: { onEscape: () => void }) {
         </>
       )}
       <div className="foot">ECHOS · 身份侦测 · 非平台功能</div>
+    </div>
+  );
+}
+
+/* ---------------- CASE 02：零信号 / Aka-0 监视演出 ---------------- */
+
+export function SurveillanceScreen({ source, onExit }: { source: string; onExit: () => void }) {
+  const [hits, setHits] = useState(0);
+  const [showEscape, setShowEscape] = useState(false);
+
+  // 返回按钮延迟出现
+  useEffect(() => {
+    const t = window.setTimeout(() => setShowEscape(true), 1400);
+    return () => window.clearTimeout(t);
+  }, []);
+
+  const click = () => {
+    if (hits >= 2) {
+      onExit();
+      return;
+    }
+    const next = hits + 1;
+    setHits(next);
+    if (next === 2) playSurveillanceNoise(); // 第二次点击播放一声低频噪音
+  };
+
+  const dodged = hits >= 2;
+  return (
+    <div className="surveillance" key={source}>
+      <div className="wave-bars" aria-hidden="true">
+        {[0, 1, 2, 3, 4, 5].map((i) => (
+          <i
+            key={i}
+            className={source === "零信号" ? "on" : ""}
+            style={{ height: [36, 72, 100, 84, 52, 30][i], animationDelay: `${i * 0.14}s` }}
+          />
+        ))}
+      </div>
+      <div className="typing">正在输入{source}…</div>
+      <div className="eyes-row" aria-hidden="true">
+        <div className="eye" style={{ animationDelay: "0s" }} />
+        <div className="eye" style={{ animationDelay: "0.6s" }} />
+        <div className="eye" style={{ animationDelay: "1.3s" }} />
+        <div className="eye" style={{ animationDelay: "2.1s" }} />
+      </div>
+      {showEscape && (
+        <button
+          className="escape"
+          style={dodged ? undefined : { transform: `translate(${hits === 0 ? -26 : 22}px, ${hits === 0 ? 8 : -10}px)` }}
+          onClick={click}
+        >
+          {dodged ? "返回检索" : "离开"}
+        </button>
+      )}
+      <div className="foot">ECHOS · 零信号 · 该页面未收录于任何索引</div>
+    </div>
+  );
+}
+
+/* ---------------- 首次登录信息窗（全员群最新消息摘要） ---------------- */
+
+export function WelcomeInfoWindow({ onClose }: { onClose: () => void }) {
+  useEffect(() => {
+    playMessageTone();
+  }, []);
+  return (
+    <div className="welcome-overlay">
+      <div className="welcome-toast card">
+        <div className="welcome-head">
+          <span className="welcome-icon" aria-hidden="true">💬</span>
+          <b>回声 ECHOS · 新消息</b>
+        </div>
+        <div className="welcome-body">
+          <b>全员群</b>
+          <p>
+            最新消息摘要：群公告已被替换为《连接与断开守则》节选，原公告无法查看。
+            全员群所有消息停在 04:08。汐泊诺思 23:58 发来今天的「第一次」问候。
+          </p>
+        </div>
+        <button className="primary-button" style={{ width: "100%" }} onClick={onClose}>
+          知道了
+        </button>
+      </div>
     </div>
   );
 }
@@ -602,7 +743,7 @@ export function ReviewPage({ done, onDone }: { done: boolean; onDone: () => void
   };
 
   return (
-    <div className="review-wrap">
+    <div className="review-wrap review-stage">
       <div className="review-head">
         <b>复核请求（仅当前会话可读）</b>
         <span>该页面未收录于检索索引。</span>
@@ -786,7 +927,7 @@ export function IdentityCheck({
 /* ---------------- 结局 ---------------- */
 
 
-export function EndingScreen({ ending, onChoose }: { ending: GameState["ending"]; onChoose: (e: "good" | "bad") => void }) {
+export function EndingScreen({ ending, onChoose }: { ending: GameState["ending"]; onChoose: (e: "good" | "bad" | "none") => void }) {
   if (ending === "good") {
     return (
       <div className="ending-screen good">
@@ -803,7 +944,7 @@ export function EndingScreen({ ending, onChoose }: { ending: GameState["ending"]
             04:08 之后，账号没有回来。平台显示：「该账号已注销，联系人已解除关联。」
           </p>
           <div className="ending-actions">
-            <button className="primary-button" onClick={() => onChoose("bad")}>重新选择结局</button>
+            <button className="primary-button" onClick={() => onChoose("none")}>重新选择结局</button>
           </div>
         </div>
       </div>
@@ -823,7 +964,7 @@ export function EndingScreen({ ending, onChoose }: { ending: GameState["ending"]
             这一次，她不再期待回复。N9Rtz 依旧已读不回。
           </p>
           <div className="ending-actions">
-            <button className="primary-button" onClick={() => onChoose("good")}>重新选择结局</button>
+            <button className="primary-button" onClick={() => onChoose("none")}>重新选择结局</button>
           </div>
         </div>
       </div>
@@ -1118,20 +1259,25 @@ const TRACK_VOLUME: Record<"rain" | "suspense" | "horror" | "farewell", number> 
   farewell: 1,
 };
 
-export function AudioLayer({ game }: { game: GameState }) {
+type BgmTrack = "rain" | "suspense" | "horror" | "farewell" | "none";
+
+export function AudioLayer({ game, routeName }: { game: GameState; routeName: string }) {
   const ref = useRef<HTMLAudioElement>(null);
   const startedRef = useRef(false);
 
-  // 音轨选择（优先级从高到低）：惊悚 > 告别 > 悬疑 > 日常雨声
-  const track: "rain" | "suspense" | "horror" | "farewell" = useMemo(() => {
+  // 音轨选择（优先级从高到低）：惊悚 > 告别 > 悬疑 > 主题雨声 > 静默。
+  // 按设计契约：应用内（会话列表/聊天/检索/台账）默认无背景音乐，只保留消息提示音；
+  // 开场、登录与结局使用忧伤阴郁的主题雨声。
+  const track: BgmTrack = useMemo(() => {
     const horror = game.luvisLogin || (game.identityCheck && !game.memoryBlocked);
     const farewell = game.case03 === "done" || game.ending !== "none";
     const suspense = game.surveillanceSeen["零信号"] || game.case02 !== "none";
     if (horror) return "horror";      // /audio/background-horror.mp3（Lights）
     if (farewell) return "farewell";  // /audio/background-farewell.mp3（I Walk With Ghosts）
     if (suspense) return "suspense";  // /audio/background-suspense.mp3（Countdown）
-    return "rain";                    // /audio/background-rain.mp3（默认日常雨声）
-  }, [game]);
+    const themed = routeName === "wake" || routeName === "login" || routeName === "ending";
+    return themed ? "rain" : "none"; // 主题雨声 /audio/background-rain.mp3；应用内静默，只保留消息提示音
+  }, [game, routeName]);
 
   // 首次用户操作后开始播放（浏览器自动播放策略）
   useEffect(() => {
@@ -1139,7 +1285,7 @@ export function AudioLayer({ game }: { game: GameState }) {
       if (startedRef.current) return;
       startedRef.current = true;
       const el = ref.current;
-      if (el && !game.bgmMuted) void el.play().catch(() => {});
+      if (el && !game.bgmMuted && el.getAttribute("data-src")) void el.play().catch(() => {});
     };
     window.addEventListener("pointerdown", start);
     window.addEventListener("keydown", start);
@@ -1149,10 +1295,19 @@ export function AudioLayer({ game }: { game: GameState }) {
     };
   }, [track, game.bgmMuted]);
 
-  // 音轨切换（含音量映射）
+  // 音轨切换（含音量映射；"none" 表示静默）
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
+    if (track === "none") {
+      if (el.getAttribute("data-src") !== "none") {
+        el.pause();
+        el.removeAttribute("src");
+        el.setAttribute("data-src", "none");
+        el.load();
+      }
+      return;
+    }
     const src = `/audio/background-${track}.mp3`;
     if (el.getAttribute("data-src") !== src) {
       el.pause();
