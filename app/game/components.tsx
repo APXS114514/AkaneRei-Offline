@@ -375,6 +375,7 @@ const LEGACY_WINDOW_RECS = [
 
 export function LegacyWindowPage() {
   const [done, setDone] = useState(false);
+  const [closeHint, setCloseHint] = useState(false);
 
   const finish = () => {
     if (done) return;
@@ -394,8 +395,24 @@ export function LegacyWindowPage() {
     setDone(true);
   };
 
+  /** 关闭本窗口并返回主窗口（脚本打开的窗口允许 window.close；失败则提示手动关闭） */
+  const closeWindow = () => {
+    try {
+      window.close();
+    } catch {
+      /* 忽略 */
+    }
+    window.setTimeout(() => {
+      if (!document.hidden) setCloseHint(true);
+    }, 350);
+  };
+
   return (
     <div className="legacy-window">
+      <div className="lw-top-actions">
+        <button onClick={closeWindow}>返回主窗口</button>
+      </div>
+
       <div className="lw-head">
         <div className="lw-avatar" aria-hidden="true">L</div>
         <div>
@@ -450,13 +467,21 @@ export function LegacyWindowPage() {
             已找到线索 · 开启下一章节（CASE 03 冷备份）
           </button>
         ) : (
-          <div className="lw-done">
-            ✅ 线索已同步。CASE 02「已注销」完成。
-            <br />
-            请返回主窗口继续调查——首页已出现《连接与断开守则》待办与汐泊诺思迁移公告。
-          </div>
+          <>
+            <div className="lw-done">
+              ✅ 线索已同步。CASE 02「已注销」完成。
+              <br />
+              请返回主窗口继续调查——首页已出现《连接与断开守则》待办与汐泊诺思迁移公告。
+            </div>
+            <div className="lw-actions">
+              <button className="primary-button" onClick={closeWindow}>关闭并返回主窗口</button>
+            </div>
+          </>
         )}
-        <p className="lw-note">本页为只读线索页；点击上方按钮后可将结果写回主窗口存档。</p>
+        <p className="lw-note">
+          本页为只读线索页；点击上方按钮后可将结果写回主窗口存档。
+          {closeHint && " 若未能自动关闭本窗口，请手动关闭此标签页。"}
+        </p>
       </div>
     </div>
   );

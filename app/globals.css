@@ -429,6 +429,9 @@ select.input-field { cursor: pointer; }
 
 /* ---------- 本地备份线索页（新窗口 #/legacy） ---------- */
 .legacy-window { min-height: 100vh; background: linear-gradient(180deg, #10161d 0%, #0b0f14 100%); color: #d9dee5; padding: 34px 20px 60px; }
+.legacy-window .lw-top-actions { display: flex; justify-content: flex-end; margin-bottom: 14px; }
+.legacy-window .lw-top-actions button { border: 1px solid #2c3642; background: transparent; color: #aab4bf; border-radius: 8px; padding: 7px 16px; cursor: pointer; font-size: 12px; transition: border-color .15s ease, color .15s ease; }
+.legacy-window .lw-top-actions button:hover { border-color: #4a5866; color: #e6ebf1; }
 .legacy-window .lw-head { display: flex; gap: 14px; align-items: center; margin-bottom: 20px; }
 .legacy-window .lw-avatar { width: 48px; height: 48px; border-radius: 14px; background: #cfd6de; color: #7a828c; display: grid; place-items: center; font-size: 20px; font-weight: 700; }
 .legacy-window .lw-head b { display: block; font-size: 16px; color: #e6ebf1; }
@@ -438,6 +441,8 @@ select.input-field { cursor: pointer; }
 .legacy-window .lw-card h4 { margin: 0 0 6px; font-size: 13px; color: #e6ebf1; }
 .legacy-window .lw-card p { margin: 0; font-size: 13px; line-height: 1.85; color: #aab4bf; }
 .legacy-window .lw-footer { margin-top: 22px; text-align: center; }
+.legacy-window .lw-actions { margin-top: 14px; display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+.legacy-window .lw-actions .primary-button { background: linear-gradient(180deg, #0a84ff 0%, #0066e8 100%); }
 .legacy-window .lw-done { font-size: 13px; line-height: 1.9; color: #a8d5ba; border: 1px solid rgba(168,213,186,.35); border-radius: 10px; padding: 12px 14px; }
 .legacy-window .lw-note { font-size: 11px; color: #6f7c8a; margin-top: 12px; }
 

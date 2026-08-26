@@ -315,4 +315,9 @@ test("v0.4 flow gaps: welcome window, evidence confirm, Aka-0 archive, QA segmen
   assert.match(page, /voice-card/);
   assert.match(page, /audio: "\/audio\/luvis-morse\.wav"/);
   assert.match(page, /静音规律是关键/);
+
+  // 本地备份线索页写回存档后必须有返回主窗口的按钮（CASE 02 出口回归）
+  assert.match(page, /关闭并返回主窗口/);
+  assert.match(page, /window\.close\(\)/);
+  assert.match(page, /若未能自动关闭本窗口/);
 });
