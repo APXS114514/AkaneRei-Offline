@@ -244,8 +244,10 @@ test("v0.4 flow gaps: welcome window, evidence confirm, Aka-0 archive, QA segmen
   // 重新选择结局返回注销页（§5），而非直接切换另一结局
   assert.match(page, /onChoose\("none"\)/);
 
-  // 全平台默认无背景音乐，只保留消息提示音（故事大纲 §60 / 流程验证点）
-  assert.match(page, /return themed \? "rain" : "none"/);
+  // 默认全天候保留深夜雨声作为环境底噪；悬疑/惊悚/告别阶段才切换音轨
+  assert.match(page, /return "rain";/);
+  assert.match(page, /const suspense = game\.surveillanceSeen\["零信号"\] \|\| game\.case02 !== "none"/);
+  assert.doesNotMatch(page, /return themed \? "rain" : "none"/);
 
   // N9Rtz 检索返回会话 + 资料卡（§1.2 / 检索范围表）
   assert.match(page, /N9Rtz 会话（事故夜后空白）/);
@@ -253,4 +255,11 @@ test("v0.4 flow gaps: welcome window, evidence confirm, Aka-0 archive, QA segmen
   // 软锁回归：CASE 02 完成后平台不再接受残留账号凭据（防止 case02 降级导致歌单/质检/事故门槛锁死）
   assert.match(page, /该残留账号已在身份侦测中断开/);
   assert.match(page, /r\.name === "legacy" && \(!game\.luvisLogin \|\| game\.case02 === "done"\)/);
+
+  // 调试模式后门：搜索框输入调试码可跳关/触发结局
+  assert.match(page, /APXS-NEXT/);
+  assert.match(page, /APXS-END1/);
+  assert.match(page, /APXS-END2/);
+  assert.match(page, /debugNextCase/);
+  assert.match(page, /debugEndGame/);
 });

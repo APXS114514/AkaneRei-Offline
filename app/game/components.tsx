@@ -1259,15 +1259,15 @@ const TRACK_VOLUME: Record<"rain" | "suspense" | "horror" | "farewell", number> 
   farewell: 1,
 };
 
-type BgmTrack = "rain" | "suspense" | "horror" | "farewell" | "none";
+type BgmTrack = "rain" | "suspense" | "horror" | "farewell";
 
-export function AudioLayer({ game, routeName }: { game: GameState; routeName: string }) {
+export function AudioLayer({ game }: { game: GameState }) {
   const ref = useRef<HTMLAudioElement>(null);
   const startedRef = useRef(false);
 
-  // 音轨选择（优先级从高到低）：惊悚 > 告别 > 悬疑 > 主题雨声 > 静默。
-  // 按设计契约：应用内（会话列表/聊天/检索/台账）默认无背景音乐，只保留消息提示音；
-  // 开场、登录与结局使用忧伤阴郁的主题雨声。
+  // 音轨选择（优先级从高到低）：惊悚 > 告别 > 悬疑 > 默认雨声。
+  // 默认全天候保留深夜雨声作为环境底噪；检索到「零信号」后进入悬疑氛围，
+  // 残留账号/身份侦测阶段换惊悚氛围，冷备份破拆与结局换告别氛围。
   const track: BgmTrack = useMemo(() => {
     const horror = game.luvisLogin || (game.identityCheck && !game.memoryBlocked);
     const farewell = game.case03 === "done" || game.ending !== "none";
@@ -1275,9 +1275,8 @@ export function AudioLayer({ game, routeName }: { game: GameState; routeName: st
     if (horror) return "horror";      // /audio/background-horror.mp3（Lights）
     if (farewell) return "farewell";  // /audio/background-farewell.mp3（I Walk With Ghosts）
     if (suspense) return "suspense";  // /audio/background-suspense.mp3（Countdown）
-    const themed = routeName === "wake" || routeName === "login" || routeName === "ending";
-    return themed ? "rain" : "none"; // 主题雨声 /audio/background-rain.mp3；应用内静默，只保留消息提示音
-  }, [game, routeName]);
+    return "rain";                    // /audio/background-rain.mp3（默认日常雨声，环境底噪）
+  }, [game]);
 
   // 首次用户操作后开始播放（浏览器自动播放策略）
   useEffect(() => {
@@ -1295,19 +1294,10 @@ export function AudioLayer({ game, routeName }: { game: GameState; routeName: st
     };
   }, [track, game.bgmMuted]);
 
-  // 音轨切换（含音量映射；"none" 表示静默）
+  // 音轨切换（含音量映射）
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    if (track === "none") {
-      if (el.getAttribute("data-src") !== "none") {
-        el.pause();
-        el.removeAttribute("src");
-        el.setAttribute("data-src", "none");
-        el.load();
-      }
-      return;
-    }
     const src = `/audio/background-${track}.mp3`;
     if (el.getAttribute("data-src") !== src) {
       el.pause();

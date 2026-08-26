@@ -47,6 +47,97 @@ import {
 } from "./game/components";
 import { playEvidenceConfirm } from "./game/sound";
 
+/* ---------- 调试模式后门（在搜索框输入调试码） ----------
+ * APXS-NEXT  完成当前 CASE 并进入下一关
+ * APXS-END1  直接触发好结局「已离线」（自动补全全部前置）
+ * APXS-END2  直接触发坏结局「重新登录」（自动补全全部前置）
+ */
+const DEBUG_NEXT = "APXS-NEXT";
+const DEBUG_END1 = "APXS-END1";
+const DEBUG_END2 = "APXS-END2";
+const DEBUG_CODES = [DEBUG_NEXT, DEBUG_END1, DEBUG_END2];
+
+const CASE01_RECS = [
+  "rec-drop-record", "rec-call-record", "rec-audio-stems", "rec-timeline",
+  "rec-n9rtz-profile", "rec-n9rtz-conv",
+];
+const CASE02_RECS = [
+  "rec-luvisdrug-profile", "rec-note-1", "rec-note-2", "rec-note-3", "rec-note-4",
+  "rec-luvis-audit", "rec-hz-vendor", "rec-hz-fund", "rec-rules",
+];
+const CASE03_RECS = ["rec-shio-profile", "rec-playlist", "rec-cold-backup"];
+const CASE04_RECS = ["rec-qa-1", "rec-qa-2", "rec-qa-3", "rec-qa-4", "rec-accident", "rec-aka0-archive", "rec-identity-check"];
+const LEGACY_NOTE_IDS = ["rec-note-1", "rec-note-2", "rec-note-3", "rec-note-4"];
+
+function withRecs(g: GameState, ids: string[]): GameState {
+  const openedRecords = [...g.openedRecords];
+  for (const id of ids) {
+    if (!openedRecords.includes(id)) openedRecords.push(id);
+  }
+  return { ...g, openedRecords };
+}
+
+/** 调试：完成当前最靠前的一个未完成阶段，返回新状态与提示 */
+function debugNextCase(g: GameState): { state: GameState; msg: string } {
+  if (g.case01 !== "done") {
+    return {
+      state: { ...withRecs(g, CASE01_RECS), case01: "done", case01Timeline: true, case01Stems: true },
+      msg: "CASE 01「已读不回」已完成，进入 CASE 02。",
+    };
+  }
+  if (g.case02 !== "done") {
+    return {
+      state: { ...withRecs(g, CASE02_RECS), case02: "done", luvisNotes: [...LEGACY_NOTE_IDS], luvisLogin: false },
+      msg: "CASE 02「已注销」已完成，进入 CASE 03。",
+    };
+  }
+  if (g.case03 !== "done") {
+    return {
+      state: { ...withRecs(g, CASE03_RECS), case03: "done" },
+      msg: "CASE 03「冷备份」已完成，进入 CASE 04。",
+    };
+  }
+  if (!g.aka0Confirmed) {
+    return {
+      state: { ...withRecs(g, CASE04_RECS), aka0Confirmed: true },
+      msg: "Aka-0 身份复核已完成（隐藏复核页视为已通过）。",
+    };
+  }
+  if (!g.identityCheck) {
+    return {
+      state: { ...withRecs(g, ["rec-identity-check"]), identityCheck: true },
+      msg: "账号来源人工校验已完成。",
+    };
+  }
+  if (!g.memoryBlocked) {
+    return {
+      state: { ...g, memoryBlocked: true },
+      msg: "记忆覆盖已阻断，全部调查完成。可在账号安全中心选择结局。",
+    };
+  }
+  return { state: g, msg: "全部阶段均已完成，可在账号安全中心选择结局。", };
+}
+
+/** 调试：补全全部调查前置并直接进入指定结局 */
+function debugEndGame(g: GameState, good: boolean): GameState {
+  const base: GameState = {
+    ...g,
+    case01: "done",
+    case01Timeline: true,
+    case01Stems: true,
+    case02: "done",
+    luvisNotes: [...LEGACY_NOTE_IDS],
+    luvisLogin: false,
+    case03: "done",
+    aka0Confirmed: true,
+    identityCheck: true,
+    memoryBlocked: true,
+  };
+  const s = withRecs(base, [...CASE01_RECS, ...CASE02_RECS, ...CASE03_RECS, ...CASE04_RECS]);
+  s.ending = good ? "good" : "bad";
+  return s;
+}
+
 export default function Page() {
   const [game, setGame] = useState<GameState>(() => readSavedGame());
   const [route, setRoute] = useState<Route>(() =>
@@ -61,6 +152,7 @@ export default function Page() {
   const [survPending, setSurvPending] = useState<string | null>(null);
   const [survCount, setSurvCount] = useState(0);
   const [showWelcome, setShowWelcome] = useState(false);
+  const [debugNotice, setDebugNotice] = useState("");
   const [confirmReset, setConfirmReset] = useState(false);
   const chatBodyRef = useRef<HTMLDivElement>(null);
   const survTimerRef = useRef<number | null>(null);
@@ -231,6 +323,24 @@ export default function Page() {
     setSearchQuery(q);
     if (!q) {
       setLastSearch("");
+      return;
+    }
+    // 调试模式后门
+    const up = q.toUpperCase();
+    if (DEBUG_CODES.includes(up)) {
+      setLastSearch("");
+      setSurvPending(null);
+      if (up === DEBUG_NEXT) {
+        const { state, msg } = debugNextCase(game);
+        setGame(state);
+        setDebugNotice(`调试模式：${msg}`);
+        applyRoute({ name: "home" });
+      } else {
+        const good = up === DEBUG_END1;
+        setGame(debugEndGame(game, good));
+        setDebugNotice(`调试模式：已触发${good ? "好结局「已离线」" : "坏结局「重新登录」"}。`);
+        applyRoute({ name: "ending" });
+      }
       return;
     }
     const hit = SURVEILLANCE_TERMS.find((t) => q.includes(t));
@@ -470,6 +580,15 @@ export default function Page() {
 
   const renderHome = () => (
     <div className="conv-list">
+      {debugNotice && (
+        <div className="home-notices">
+          <div className="home-notice">
+            <b>调试模式</b>
+            <span>{debugNotice}</span>
+            <button className="text-button" onClick={() => setDebugNotice("")}>关闭提示</button>
+          </div>
+        </div>
+      )}
       {game.luvisLogin && (
         <div className="home-notices">
           <div className="home-notice warn">
@@ -1101,7 +1220,7 @@ export default function Page() {
           }}
         />
       )}
-      <AudioLayer game={game} routeName={route.name} />
+      <AudioLayer game={game} />
     </>
   );
 }
