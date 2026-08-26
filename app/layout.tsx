@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 const siteUrl = new URL(
@@ -7,6 +7,14 @@ const siteUrl = new URL(
 const title = "回声 ECHOS";
 const description =
   "登录回声 ECHOS，处理一整个群聊的未读消息。你看到的联系人，未必还活着。";
+
+/** 移动端视口：适配刘海/底部横条（safe-area），主题色跟随页面深色背景 */
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#0f1220",
+};
 
 export const metadata: Metadata = {
   metadataBase: siteUrl,

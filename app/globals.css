@@ -34,6 +34,9 @@ body {
     radial-gradient(1000px 600px at 8% 110%, rgba(172,60,220,.28) 0%, transparent 55%),
     linear-gradient(165deg, #141a33 0%, #1b1f3a 40%, #241f3d 100%);
   background-attachment: fixed;
+  /* 移动端触屏体验：去掉点击高亮闪烁，禁止双击缩放延迟 */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 button, input, select, textarea { font: inherit; }
 button { color: inherit; }
@@ -72,7 +75,7 @@ select.input-field { cursor: pointer; }
 .card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.04), 0 10px 30px rgba(0,0,0,.05); }
 
 /* ---------- 开场演出 ---------- */
-.opening { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px; gap: 28px; background: linear-gradient(180deg, #10161d 0%, #1b232c 100%); color: #d9dee5; }
+.opening { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px; gap: 28px; background: linear-gradient(180deg, #10161d 0%, #1b232c 100%); color: #d9dee5; }
 .opening-phone { width: min(340px, 86vw); border-radius: 22px; border: 1px solid #2c3642; background: #0e141b; padding: 14px 12px 16px; box-shadow: 0 18px 50px rgba(0,0,0,.5); }
 .opening-phone .opening-msg { display: flex; gap: 8px; margin: 10px 4px; }
 .opening-phone .opening-scene { display: flex; flex-direction: column; }
@@ -95,7 +98,7 @@ select.input-field { cursor: pointer; }
 .opening-skip:hover { color: #c4ccd5; }
 
 /* ---------- 登录（macOS 窗口） ---------- */
-.login-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+.login-screen { min-height: 100vh; min-height: 100dvh; display: flex; align-items: center; justify-content: center; padding: 20px; }
 .login-card {
   width: min(380px, 92vw); padding: 40px 30px 30px; position: relative;
   border-radius: 12px; border: 1px solid rgba(255,255,255,.1);
@@ -127,7 +130,7 @@ select.input-field { cursor: pointer; }
 
 /* ---------- 应用框架（macOS 窗口） ---------- */
 .app-shell {
-  display: flex; height: calc(100vh - 40px); margin: 20px; overflow: hidden;
+  display: flex; height: calc(100vh - 40px); height: calc(100dvh - 40px); margin: 20px; overflow: hidden;
   border-radius: 12px; border: 1px solid rgba(255,255,255,.1);
   background: var(--panel);
   box-shadow: 0 0 0 .5px rgba(0,0,0,.4), 0 30px 80px rgba(0,0,0,.55), 0 8px 24px rgba(0,0,0,.4);
@@ -433,7 +436,7 @@ select.input-field { cursor: pointer; }
 .mini-eye::before { content: ""; position: absolute; inset: 2px 3px; background: var(--danger); border-radius: 50%; }
 
 /* ---------- 本地备份线索页（新窗口 #/legacy） ---------- */
-.legacy-window { min-height: 100vh; background: linear-gradient(180deg, #10161d 0%, #0b0f14 100%); color: #d9dee5; padding: 34px 20px 60px; }
+.legacy-window { min-height: 100vh; min-height: 100dvh; background: linear-gradient(180deg, #10161d 0%, #0b0f14 100%); color: #d9dee5; padding: calc(34px + env(safe-area-inset-top)) 20px calc(60px + env(safe-area-inset-bottom)); }
 .legacy-window .lw-top-actions { display: flex; justify-content: flex-end; margin-bottom: 14px; }
 .legacy-window .lw-top-actions button { border: 1px solid #2c3642; background: transparent; color: #aab4bf; border-radius: 8px; padding: 7px 16px; cursor: pointer; font-size: 12px; transition: border-color .15s ease, color .15s ease; }
 .legacy-window .lw-top-actions button:hover { border-color: #4a5866; color: #e6ebf1; }
@@ -526,7 +529,7 @@ select.input-field { cursor: pointer; }
 @keyframes review-scan { 0% { background-position: 0 0, 0 0; } 100% { background-position: 0 0, -200% 0; } }
 
 /* ---------- 结局演出 ---------- */
-.ending-screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: linear-gradient(180deg, #10161d 0%, #0b0f14 100%); color: #d9dee5; padding: 30px; }
+.ending-screen { min-height: 100vh; min-height: 100dvh; display: flex; align-items: center; justify-content: center; background: linear-gradient(180deg, #10161d 0%, #0b0f14 100%); color: #d9dee5; padding: 30px; }
 .ending-box { max-width: 560px; text-align: center; }
 .ending-kicker { font-size: 12px; letter-spacing: .18em; color: #6f7c8a; font-family: var(--mono); }
 .ending-title { font-size: 24px; margin: 16px 0 12px; }
@@ -563,14 +566,14 @@ select.input-field { cursor: pointer; }
 .appendix-block h4 { margin: 0 0 8px; font-size: 13px; }
 .appendix-block p { margin: 0; font-size: 13px; line-height: 1.9; color: var(--muted); }
 
-/* ---------- 真相页 ---------- */.truth-page { max-width: 720px; margin: 0 auto; padding: 40px 22px 80px; background: #10161d; color: #d9dee5; min-height: 100vh; font-size: 14px; line-height: 1.9; }
+/* ---------- 真相页 ---------- */.truth-page { max-width: 720px; margin: 0 auto; padding: 40px 22px 80px; background: #10161d; color: #d9dee5; min-height: 100vh; min-height: 100dvh; font-size: 14px; line-height: 1.9; }
 .truth-page h1 { font-size: 24px; }
 .truth-page h2 { font-size: 17px; margin-top: 34px; color: #e6ebf1; }
 .truth-page p { color: #aab4bf; }
 .truth-page .truth-warn { border: 1px solid rgba(176,58,58,.5); border-radius: 10px; padding: 12px 16px; color: #e0a9a5; background: rgba(176,58,58,.08); margin-bottom: 26px; }
 
 /* ---------- 路由切换动画（macOS 柔和淡入） ---------- */
-.route-view { animation: route-in .32s var(--ease-mac) both; min-height: 100vh; }
+.route-view { animation: route-in .32s var(--ease-mac) both; min-height: 100vh; min-height: 100dvh; }
 @keyframes route-in {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -583,16 +586,24 @@ select.input-field { cursor: pointer; }
 
 /* ---------- 响应式（macOS 窗口在窄屏铺满） ---------- */
 @media (max-width: 700px) {
-  .app-shell { height: 100vh; margin: 0; border-radius: 0; border: 0; }
-  .app-sidebar { width: 76px; }
+  .app-shell { height: 100vh; height: 100dvh; margin: 0; border-radius: 0; border: 0; }
+  .app-sidebar { width: 76px; padding-bottom: env(safe-area-inset-bottom); }
   .traffic-lights { display: none; }
   .app-brand { padding-top: 14px; }
   .app-brand h1, .app-nav button span.nav-label, .app-account { display: none; }
   .app-nav button { justify-content: center; padding: 12px; }
   .chat-msg { max-width: 88%; }
+  /* 触屏点按目标放大：谜题槽位按钮/分轨操作不低于 36px */
+  .slot-actions button, .stem-toggle, .stem-play { min-width: 36px; height: 36px; }
+  .stem-toggle { min-width: 78px; }
+  /* 顶栏避开刘海/灵动岛，内容仍垂直居中 */
+  .app-topbar { height: calc(52px + env(safe-area-inset-top)); padding-top: env(safe-area-inset-top); }
+  /* 内容滚动区底部预留安全区（iPhone 横条），滚动到底不遮挡 */
+  .app-content { padding-bottom: env(safe-area-inset-bottom); }
+  .search-box .primary-button { padding: 0 16px; }
 }
 @media (max-width: 420px) {
-  .app-content { padding-bottom: 8px; }
+  .app-content { padding-bottom: max(8px, env(safe-area-inset-bottom)); }
 }
 
 /* ---------- 减少动态效果 ---------- */
