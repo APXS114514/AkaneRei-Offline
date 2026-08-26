@@ -280,4 +280,15 @@ test("v0.4 flow gaps: welcome window, evidence confirm, Aka-0 archive, QA segmen
   assert.match(page, /onBackHome/);
   assert.match(page, /返回首页/);
   assert.match(page, /想重新开始/);
+
+  // 搜索解锁提示：命中索引但被章节门槛锁定时给出提示，而非「没有找到」
+  assert.match(page, /kind: "locked"/);
+  assert.match(page, /需要先完成对应章节的调查/);
+  assert.match(page, /大小写不敏感匹配/);
+
+  // 背景音乐音量调节：存档字段 + 滑条 + 实际音量 = 音轨基准 × 玩家音量（含 duck 缩放）
+  assert.match(page, /bgmVolume/);
+  assert.match(page, /type="range"/);
+  assert.match(page, /applyVolume/);
+  assert.match(page, /base \* volumeRef\.current/);
 });

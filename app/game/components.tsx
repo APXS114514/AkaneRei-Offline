@@ -1453,6 +1453,10 @@ type BgmTrack = "rain" | "suspense" | "horror" | "farewell";
 export function AudioLayer({ game }: { game: GameState }) {
   const ref = useRef<HTMLAudioElement>(null);
   const startedRef = useRef(false);
+  const volumeRef = useRef(game.bgmVolume);
+  const trackRef = useRef<BgmTrack>("rain");
+  const duckedRef = useRef(false);
+  volumeRef.current = game.bgmVolume;
 
   // 音轨选择（优先级从高到低）：惊悚 > 告别 > 悬疑 > 默认雨声。
   // 默认全天候保留深夜雨声作为环境底噪；检索到「零信号」后进入悬疑氛围，
@@ -1466,6 +1470,13 @@ export function AudioLayer({ game }: { game: GameState }) {
     if (suspense) return "suspense";  // /audio/background-suspense.mp3（Countdown）
     return "rain";                    // /audio/background-rain.mp3（默认日常雨声，环境底噪）
   }, [game]);
+  trackRef.current = track;
+
+  // 实际音量 = 音轨基准音量 × 玩家音量（duck 时统一压到 0.16 再乘玩家音量）
+  const applyVolume = (el: HTMLAudioElement) => {
+    const base = duckedRef.current ? 0.16 : TRACK_VOLUME[trackRef.current];
+    el.volume = Math.max(0, Math.min(1, base * volumeRef.current));
+  };
 
   // 首次用户操作后开始播放（浏览器自动播放策略）
   useEffect(() => {
@@ -1493,19 +1504,23 @@ export function AudioLayer({ game }: { game: GameState }) {
       el.setAttribute("data-src", src);
       el.setAttribute("src", assetPath(src));
       el.load();
-      el.volume = TRACK_VOLUME[track];
       if (startedRef.current && !game.bgmMuted) void el.play().catch(() => {});
     }
+    applyVolume(el);
   }, [track, game.bgmMuted]);
+
+  // 玩家调节音量时立即生效（含 duck 状态）
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !el.getAttribute("data-src")) return;
+    applyVolume(el);
+  }, [game.bgmVolume, track]);
 
   // 其他媒体（分轨/告别语音）播放时压低 BGM
   useEffect(() => {
     const el = ref.current;
-    const duck = () => { if (el) el.volume = 0.16; };
-    const unduck = () => {
-      if (!el) return;
-      el.volume = (el.getAttribute("data-src") ?? "").includes("background-rain") ? 0.12 : 1;
-    };
+    const duck = () => { duckedRef.current = true; if (el) applyVolume(el); };
+    const unduck = () => { duckedRef.current = false; if (el) applyVolume(el); };
     document.addEventListener("play", duck, true);
     document.addEventListener("pause", unduck, true);
     document.addEventListener("ended", unduck, true);

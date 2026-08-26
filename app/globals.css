@@ -166,6 +166,12 @@ select.input-field { cursor: pointer; }
 .app-account { margin-top: auto; padding: 12px 14px; border-top: 1px solid var(--line); font-size: 12px; color: var(--muted); }
 .music-toggle { border: 1px solid var(--line-strong); background: var(--fill); border-radius: 7px; padding: 6px 10px; margin-top: 8px; cursor: pointer; font-size: 12px; color: var(--muted); width: 100%; transition: background .12s var(--ease-mac); }
 .music-toggle:hover { background: #e8e8ed; color: var(--ink); }
+/* 背景音乐音量滑条 */
+.volume-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.volume-label { font-size: 12px; color: var(--muted); flex: none; }
+.volume-slider { flex: 1; min-width: 0; accent-color: var(--accent); cursor: pointer; height: 20px; }
+.volume-slider:disabled { opacity: .45; cursor: default; }
+.volume-val { font-size: 11px; color: var(--muted); font-family: var(--mono); flex: none; width: 38px; text-align: right; }
 
 /* ---------- 会话列表 ---------- */
 .conv-list { padding: 8px; }
@@ -239,6 +245,8 @@ select.input-field { cursor: pointer; }
 .search-note { font-size: 12px; color: var(--faint); margin: -8px 0 18px; }
 .search-results { display: flex; flex-direction: column; gap: 10px; }
 .search-empty { color: var(--muted); font-size: 13px; padding: 30px 0; text-align: center; }
+.search-empty.locked { color: var(--danger); line-height: 1.9; }
+.search-empty.locked .search-lock-hint { color: var(--faint); font-size: 12px; display: block; margin-top: 6px; }
 .record-card { border: 1px solid var(--line); border-radius: 11px; background: #fff; padding: 14px 16px; cursor: pointer; text-align: left; width: 100%; transition: border-color .12s ease, box-shadow .12s ease; }
 .record-card:hover { border-color: var(--accent); box-shadow: 0 4px 14px rgba(47,124,246,.12); }
 .record-card .rc-kind { font-size: 11px; color: var(--faint); letter-spacing: .06em; }

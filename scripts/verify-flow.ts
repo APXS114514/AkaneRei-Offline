@@ -46,9 +46,10 @@ const clone = (s: GameState): GameState => ({
 
 const CASE01_MATERIALS = ["rec-drop-record", "rec-call-record", "rec-audio-stems"];
 
-/** 检索词 → 命中的档案 id（与 app/page.tsx 的 searchResults 一致） */
+/** 检索词 → 命中的档案 id（与 app/page.tsx 的 searchResults 一致，大小写不敏感） */
 function searchHit(q: string): string[] {
-  return SEARCH_INDEX.filter((e) => e.terms.some((t) => q.includes(t) || t.includes(q))).map((e) => e.recId);
+  const lower = q.toLowerCase();
+  return SEARCH_INDEX.filter((e) => e.terms.some((t) => lower.includes(t.toLowerCase()) || t.toLowerCase().includes(lower))).map((e) => e.recId);
 }
 
 /** 按真实 UI 打开档案：检索命中 + require 门限 + 监视词路由 */

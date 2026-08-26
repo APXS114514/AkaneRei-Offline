@@ -393,10 +393,23 @@ export default function Page() {
   const searchResults = useMemo(() => {
     if (!lastSearch) return null;
     const q = lastSearch;
-    const recs = SEARCH_INDEX.filter((e) => e.terms.some((t) => q.includes(t) || t.includes(q)))
+    const lower = q.toLowerCase();
+    // 大小写不敏感匹配
+    const matches = SEARCH_INDEX.filter((e) =>
+      e.terms.some((t) => lower.includes(t.toLowerCase()) || t.toLowerCase().includes(lower))
+    );
+    const recs = matches
       .map((e) => RECORDS[e.recId])
       .filter((r) => game.ending === "good" || !r.require || r.require(game));
     if (recs.length === 0) {
+      if (matches.length > 0) {
+        // 命中了索引但全部被章节门槛锁定：给出解锁提示，而非「没有找到」
+        return {
+          kind: "locked" as const,
+          q,
+          lockedTitles: matches.map((e) => RECORDS[e.recId].title),
+        };
+      }
       return { kind: "empty" as const, q };
     }
     return { kind: "results" as const, q, recs };
@@ -595,6 +608,19 @@ export default function Page() {
         >
           {game.bgmMuted ? "🔇 背景音乐：关" : "🔊 背景音乐：开"}
         </button>
+        <div className="volume-row">
+          <span className="volume-label">音量</span>
+          <input
+            className="volume-slider"
+            type="range"
+            min={0}
+            max={100}
+            value={Math.round(game.bgmVolume * 100)}
+            onChange={(e) => setGame((g) => ({ ...g, bgmVolume: Number(e.target.value) / 100 }))}
+            aria-label="背景音乐音量"
+          />
+          <span className="volume-val">{Math.round(game.bgmVolume * 100)}%</span>
+        </div>
       </div>
     </aside>
   );
@@ -824,6 +850,13 @@ export default function Page() {
           换一个词试试。
         </div>
       )}
+      {!survPending && searchResults?.kind === "locked" && (
+        <div className="search-empty locked">
+          与「{searchResults.q}」相关的结果尚未解锁。<br />
+          🔒 {searchResults.lockedTitles.join("、")} 需要先完成对应章节的调查。<br />
+          <span className="search-lock-hint">完成调查后返回此页重新检索即可查看。</span>
+        </div>
+      )}
       {!survPending && searchResults?.kind === "results" && (
         <div className="search-results">
           {searchResults.recs.map((r) => (
@@ -1036,6 +1069,21 @@ export default function Page() {
           <button className="text-button" onClick={() => setGame((g) => ({ ...g, bgmMuted: !g.bgmMuted }))}>
             {game.bgmMuted ? "已静音 · 点击开启" : "开启中 · 点击静音"}
           </button>
+        </div>
+        <div className="settings-row">
+          <span className="k">背景音乐音量</span>
+          <div className="volume-row" style={{ width: 200, flex: "none" }}>
+            <input
+              className="volume-slider"
+              type="range"
+              min={0}
+              max={100}
+              value={Math.round(game.bgmVolume * 100)}
+              onChange={(e) => setGame((g) => ({ ...g, bgmVolume: Number(e.target.value) / 100 }))}
+              aria-label="背景音乐音量"
+            />
+            <span className="volume-val">{Math.round(game.bgmVolume * 100)}%</span>
+          </div>
         </div>
         <p>清除本机全部聊天记录与调查进度。该操作是故意的彻底重置。</p>
         <button className="primary-button danger-button" style={{ width: "100%" }} onClick={() => setConfirmReset(true)}>
