@@ -13,7 +13,8 @@ export function BackToLogin() {
     } catch {
       /* 忽略 */
     }
-    window.location.href = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/#/login`;
+    // 相对上一级目录跳回游戏登录页（兼容 GitHub Pages 子路径、根域与本地预览）
+    window.location.href = "../#/login";
   };
   return (
     <button

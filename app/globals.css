@@ -383,6 +383,7 @@ select.input-field { cursor: pointer; }
 .puzzle-item { border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 8px 12px; cursor: pointer; font-size: 13px; text-align: left; }
 .puzzle-item:hover { border-color: var(--accent); }
 .puzzle-item b { color: var(--muted); margin-right: 6px; }
+.puzzle-item .puzzle-from { display: block; font-size: 11px; color: var(--faint); margin-top: 3px; }
 .puzzle-empty { color: var(--faint); font-size: 12px; padding: 6px 0; }
 .puzzle-feedback { border-radius: 8px; padding: 10px 14px; font-size: 13px; line-height: 1.7; margin-bottom: 14px; }
 .puzzle-feedback.wrong { background: var(--danger-soft); color: var(--danger); }

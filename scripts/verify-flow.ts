@@ -95,8 +95,8 @@ assert.equal(PLAYLIST_TRACKS.length, 14, "歌单 14 首曲目");
 assert.equal(PLAYLIST_LYRICS.length, 14, "歌单歌词应为 14 首");
 assert.match(
   comp,
-  /who\.trim\(\) === "晓倩" && status === "已死亡" && relation\.trim\(\) === "紧急联系人"/,
-  "隐藏复核页三项结论：晓倩 / 已死亡 / 紧急联系人"
+  /who\.trim\(\) === "晓茜" && status === "已死亡" && relation\.trim\(\) === "紧急联系人"/,
+  "隐藏复核页三项结论：晓茜 / 已死亡 / 紧急联系人"
 );
 // 结局契约：选定后不可重新选择；真结局 → 真相页；坏结局 → 轮回回登录（loopHint）
 assert.doesNotMatch(comp, /onChoose\("none"\)/, "结局选定后不应再提供重新选择");
@@ -312,11 +312,11 @@ function docOrder(): string[] {
   act("检索「质检」→ 第二段：LuvisDrug 注销前私信", (n) => { openViaSearch(n, "质检", "rec-qa-2"); });
   act("检索「质检」→ 第三段：汐泊诺思日常问候", (n) => { openViaSearch(n, "质检", "rec-qa-3"); });
   act("检索「质检」→ 第四段：平台客服记录（冷备份解锁）", (n) => { openViaSearch(n, "质检", "rec-qa-4"); });
-  act("检索「事故」→ 4·08 坠亡事故通报（死者晓倩，紧急联系人汐○）", (n) => { openViaSearch(n, "事故", "rec-accident"); });
+  act("检索「事故」→ 4·08 坠亡事故通报（死者晓茜，紧急联系人汐○）", (n) => { openViaSearch(n, "事故", "rec-accident"); });
   act("四段质检 + 事故 + 守则 + CASE 03 → reviewReady 复核通知出现", (n) => {
     assert.ok(reviewReady(n), "隐藏复核页入口条件应满足");
   });
-  act("隐藏复核页提交：晓倩 / 已死亡 / 紧急联系人", (n) => { n.aka0Confirmed = true; });
+  act("隐藏复核页提交：晓茜 / 已死亡 / 紧急联系人", (n) => { n.aka0Confirmed = true; });
   act("确认后检索「Aka-0」→ 只返回《Aka-0 账号身份复核归档》", (n) => {
     const ids = searchHit("Aka-0").filter((id) => !RECORDS[id].require || RECORDS[id].require(n));
     assert.deepEqual(ids, ["rec-aka0-archive"], "确认后精确检索 Aka-0 只返回归档");

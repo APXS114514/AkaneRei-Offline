@@ -1053,7 +1053,7 @@ export function ReviewPage({ done, onDone }: { done: boolean; onDone: () => void
   const submit = () => {
     if (done) return;
     const ok =
-      who.trim() === "晓倩" && status === "已死亡" && relation.trim() === "紧急联系人";
+      who.trim() === "晓茜" && status === "已死亡" && relation.trim() === "紧急联系人";
     if (ok) {
       setError("");
       onDone();
@@ -1109,12 +1109,12 @@ export const IDENTITY_FIELDS = [
 ];
 
 export const MEMORY_ITEMS = [
-  { id: "m-1", label: "2026-04-08 急救回执", time: "04:08", correct: true, order: 0 },
-  { id: "m-2", label: "2026-04-08 04:00–04:08 运营商通话详单", time: "04:08", correct: true, order: 1 },
-  { id: "m-3", label: "2026-04-08 04:07 本地未同步录音", time: "04:07", correct: true, order: 2 },
-  { id: "d-1", label: "平台同步日志", time: "04:08", correct: false, order: -1 },
-  { id: "d-2", label: "《连接与断开守则》条款", time: "—", correct: false, order: -1 },
-  { id: "d-3", label: "全员群公告", time: "—", correct: false, order: -1 },
+  { id: "m-1", label: "急救回执", time: "04:08", from: "来源：急救系统（平台外）", correct: true, order: 0 },
+  { id: "m-2", label: "运营商通话详单", time: "04:00–04:08", from: "来源：运营商（平台外）", correct: true, order: 1 },
+  { id: "m-3", label: "本地未同步录音", time: "04:07", from: "来源：设备本地（平台外）", correct: true, order: 2 },
+  { id: "d-1", label: "平台同步日志", time: "04:08", from: "来源：回声 ECHOS（平台内）", correct: false, order: -1 },
+  { id: "d-2", label: "《连接与断开守则》条款", time: "—", from: "来源：回声 ECHOS（平台内）", correct: false, order: -1 },
+  { id: "d-3", label: "全员群公告", time: "—", from: "来源：回声 ECHOS（平台内）", correct: false, order: -1 },
 ];
 
 export function IdentityCheck({
@@ -1183,7 +1183,12 @@ export function IdentityCheck({
 
       {!identityDone ? (
         <>
-          <p className="puzzle-desc">只抄录以下原始字段，不要选择任何结论。</p>
+          <p className="puzzle-desc">
+            只抄录以下原始字段，不选择任何结论。三个字段按「平台账号来源核对表」排列，分别对照：
+            <b>事故时间戳</b>（对照《4·08 坠亡事故通报》）→ <b>账号创建日期</b>（对照账号安全中心）→
+            <b>最后一条语音文件时间戳</b>（对照《04-08 夜间录音》档案）。
+            提交后，平台将尝试覆盖联系人关系、账号主体与「未断连接」的含义。
+          </p>
           {IDENTITY_FIELDS.map((f) => (
             <div className="login-field" key={f.key}>
               <label>{f.label}</label>
@@ -1197,7 +1202,9 @@ export function IdentityCheck({
         <>
           <p className="puzzle-desc">
             平台已被 <b>CONNECTION-KEEP</b> 接管，开始覆盖联系人关系、账号主体与「未断连接」含义。
-            从候选中只选择平台外仍可核验的三份原始材料，并按时间排列，阻断 04:08 的云端同步。
+            从候选中只选择<b>平台外</b>（急救系统 / 运营商 / 本地设备——平台无法覆盖）仍可核验的三份原始材料，
+            并按证据链排列：<b>事故时刻（急救回执 04:08）→ 通话全程（运营商详单 04:00–04:08）→ 最后的声音（本地录音 04:07）</b>，
+            阻断 04:08 的云端同步。
           </p>
           <div className="timeline-slots">
             {slots.map((id, i) => {
@@ -1224,6 +1231,7 @@ export function IdentityCheck({
             {pool.map((it) => (
               <button key={it.id} className="puzzle-item" onClick={() => place(it.id)}>
                 <b>{it.time}</b> {it.label}
+                <span className="puzzle-from">{it.from}</span>
               </button>
             ))}
           </div>

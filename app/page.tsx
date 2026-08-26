@@ -1131,6 +1131,7 @@ export default function Page() {
       <div className="settings-card card">
         <h3>账号信息</h3>
         <div className="settings-row"><span className="k">账号</span><span className="v">AkaneRei</span></div>
+        <div className="settings-row"><span className="k">创建日期</span><span className="v">2026-04-09</span></div>
         <div className="settings-row"><span className="k">状态</span><span className="v">在线 · 208 天未掉线</span></div>
         <div className="settings-row"><span className="k">云端同步</span><span className="v abnormal" style={{ color: "var(--danger)" }}>04:08 自动执行</span></div>
       </div>
@@ -1289,8 +1290,11 @@ export default function Page() {
         applyRoute({ name: "login" });
       }}
       onViewTruth={() => {
-        // 真结局：前往全案真相页
-        window.location.href = assetPath("/truth");
+        // 真结局：前往全案真相页。
+        // 用相对当前页面目录跳转（而非 assetPath 绝对路径），兼容 GitHub Pages 子路径、根域与本地预览。
+        const path = window.location.pathname;
+        const dir = path.substring(0, path.lastIndexOf("/") + 1);
+        window.location.href = `${dir}truth`;
       }}
     />
   );

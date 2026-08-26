@@ -113,8 +113,8 @@ test("CASE 03 playlist and cold backup exist with locked password", async () => 
   assert.match(page, /Rtwyzz/);
   assert.match(page, /Roy/);
   // 主角实名线索允许出现
-  assert.match(page, /倩，我该拉住你的/);
-  assert.match(page, /晓倩/);
+  assert.match(page, /茜，我该拉住你的/);
+  assert.match(page, /晓茜/);
   // 其他人物真名在游戏内一律不揭示
   for (const name of ["巴印", "李铭泽", "王镓铭", "刘睿航", "李磊", "张贤德"]) {
     assert.doesNotMatch(page, new RegExp(name), `游戏源码不应出现真名：${name}`);
@@ -154,17 +154,28 @@ test("CASE 04 identity check, memory block and endings exist", async () => {
 
   // 隐藏复核页三项结论
   assert.match(page, /Aka-0 是谁？/);
-  assert.match(page, /晓倩/);
+  assert.match(page, /晓茜/);
   assert.match(page, /紧急联系人/);
   // 身份核对原始字段
   assert.match(page, /事故时间戳/);
   assert.match(page, /账号创建日期/);
   assert.match(page, /最后一条语音文件时间戳/);
+  // 三个字段的来源明确（2026-04-09 来自账号安全中心；04:07 来自夜间录音档案）
+  assert.match(page, /创建日期/);
+  assert.match(page, /2026-04-09/);
+  assert.match(page, /对照账号安全中心/);
+  assert.match(page, /对照《04-08 夜间录音》档案/);
   // 记忆阻断：三份平台外记录
   assert.match(page, /急救回执/);
   assert.match(page, /运营商通话详单/);
   assert.match(page, /本地未同步录音/);
   assert.match(page, /CONNECTION-KEEP/);
+  // 记忆阻断提示明确：候选带来源标签（平台外/平台内），表单说明证据链顺序
+  assert.match(page, /急救系统（平台外）/);
+  assert.match(page, /运营商（平台外）/);
+  assert.match(page, /设备本地（平台外）/);
+  assert.match(page, /回声 ECHOS（平台内）/);
+  assert.match(page, /事故时刻（急救回执 04:08）→ 通话全程/);
   // 结局
   assert.match(page, /提交全部证据并注销账号/);
   assert.match(page, /晚安，不再是第一次见你/);
@@ -208,7 +219,7 @@ test("truth page is a separate static route with spoiler warning", async () => {
   assert.match(html, /为了不断线而死/);
   // 真结局流程：真相页底部提供「回到最开始登录界面」
   assert.match(html, /回到最开始登录界面/);
-  assert.match(html, /晓倩/);
+  assert.match(html, /晓茜/);
 });
 
 test("v0.4 flow gaps: welcome window, evidence confirm, Aka-0 archive, QA segments, camera, re-choice", async () => {
