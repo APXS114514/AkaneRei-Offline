@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { GameState, Route, SignalBall, SignalObstacle, Stem, TimelineItem } from "./types";
-import { assetPath } from "./types";
+import { SAVE_KEY, assetPath, readSavedGame } from "./types";
 import { RECORDS } from "./data";
 import { playMessageTone, playSurveillanceNoise } from "./sound";
 /* 展示组件 —— 由 app/page.tsx 拆分而来 */
@@ -237,8 +237,17 @@ export function StemPuzzle({ done, onDone }: { done: boolean; onDone: () => void
 
 export const LEGACY_PASSWORD = "hzloopluvisdrug";
 
-/** LuvisDrug 资料卡内嵌的残留账号登录表单 */
-export function LegacyLogin({ done, onSuccess }: { done: boolean; onSuccess: () => void }) {
+/** LuvisDrug 资料卡内嵌的残留账号登录表单。
+ *  onOpenLegacyWindow 必须在密码验证通过的同一用户手势内同步调用（window.open 弹窗拦截策略）。 */
+export function LegacyLogin({
+  done,
+  onSuccess,
+  onOpenLegacyWindow,
+}: {
+  done: boolean;
+  onSuccess: () => void;
+  onOpenLegacyWindow?: () => void;
+}) {
   const [pw, setPw] = useState("");
   const [error, setError] = useState("");
   const [wrongCount, setWrongCount] = useState(0);
@@ -249,6 +258,8 @@ export function LegacyLogin({ done, onSuccess }: { done: boolean; onSuccess: () 
     if (pw.trim().toLowerCase() === LEGACY_PASSWORD) {
       setError("");
       setFlash(true);
+      // 手势内同步打开本地备份线索页（新浏览器窗口）
+      onOpenLegacyWindow?.();
       window.setTimeout(() => {
         setFlash(false);
         onSuccess();
@@ -330,6 +341,179 @@ export function LegacyAccount({
           四篇笔记全部读完。系统正在请求身份核验……
         </div>
       )}
+    </div>
+  );
+}
+
+/* ---------------- CASE 02：本地备份线索页（新浏览器窗口 #/legacy） ----------------
+ * 登录残留账号成功后弹出。玩家在本页查找 LuvisDrug 的调查线索，
+ * 点击「开启下一章节」写入共享存档（CASE 02 完成），主窗口通过 storage 事件同步并进入 CASE 03。 */
+
+const LEGACY_WINDOW_RECS = [
+  "rec-luvisdrug-profile",
+  "rec-note-1", "rec-note-2", "rec-note-3", "rec-note-4",
+  "rec-luvis-audit", "rec-hz-vendor", "rec-hz-fund", "rec-rules",
+];
+
+export function LegacyWindowPage() {
+  const [done, setDone] = useState(false);
+
+  const finish = () => {
+    if (done) return;
+    try {
+      const g = readSavedGame();
+      const next: GameState = {
+        ...g,
+        case02: "done",
+        luvisNotes: [...LEGACY_NOTES],
+        luvisLogin: false,
+        openedRecords: [...new Set([...g.openedRecords, ...LEGACY_WINDOW_RECS])],
+      };
+      localStorage.setItem(SAVE_KEY, JSON.stringify(next));
+    } catch {
+      /* 存储不可用时忽略 */
+    }
+    setDone(true);
+  };
+
+  return (
+    <div className="legacy-window">
+      <div className="lw-head">
+        <div className="lw-avatar" aria-hidden="true">L</div>
+        <div>
+          <b>LuvisDrug · 本地备份</b>
+          <span>已注销账号的离线调查档案 · 新窗口</span>
+        </div>
+      </div>
+
+      <div className="lw-intro">
+        回声 ECHOS 在验证残留账号凭据后打开了这份本地备份。以下是 LuvisDrug 留下的一切线索——
+        对照你的主窗口调查台账，找出平台在隐藏什么。
+      </div>
+
+      <div className="lw-card">
+        <h4>零信号</h4>
+        <p>
+          正常波形是四格。他们只保留一格——剩下的三格被「切断」。
+          被标记的账号没有任何设备在线，但每天 04:08 准时「重新登录」，处理完消息又消失。
+        </p>
+      </div>
+      <div className="lw-card">
+        <h4>赫兹实验室（HZ）</h4>
+        <p>
+          回声网络的供应商 / 实际控制方。内部口号：「连接该连接的，切断该切断的。」
+          培训、缓存清理、令牌重建与好友迁移的时间高度重合。
+        </p>
+      </div>
+      <div className="lw-card">
+        <h4>没有去向的好友</h4>
+        <p>
+          17 名好友被「迁移」：没有目的地，没有接收方，没有回执。迁移时间全是凌晨 04:08。
+        </p>
+      </div>
+      <div className="lw-card">
+        <h4>预先存在的处置记录</h4>
+        <p>
+          我的注销处置记录创建时间比注销申请早了 3 天，处置人 HZ-COMPLIANCE。
+          清除流程是预先存在的。档案上写的是我的实名。
+        </p>
+      </div>
+      <div className="lw-card">
+        <h4>有人在等一个不会回复的人</h4>
+        <p>
+          最后一个被迁移的账号，每晚 23:58 都在对同一个联系人说话。
+          告诉她别等了。她的歌单和冷备份，是下一章节的入口。
+        </p>
+      </div>
+
+      <div className="lw-footer">
+        {!done ? (
+          <button className="primary-button" onClick={finish}>
+            已找到线索 · 开启下一章节（CASE 03 冷备份）
+          </button>
+        ) : (
+          <div className="lw-done">
+            ✅ 线索已同步。CASE 02「已注销」完成。
+            <br />
+            请返回主窗口继续调查——首页已出现《连接与断开守则》待办与汐泊诺思迁移公告。
+          </div>
+        )}
+        <p className="lw-note">本页为只读线索页；点击上方按钮后可将结果写回主窗口存档。</p>
+      </div>
+    </div>
+  );
+}
+
+/* ---------------- 调试：TEST-CAM 摄像头测试 ---------------- */
+
+type CamStatus = "requesting" | "active" | "denied";
+
+export function CameraTest({ onClose }: { onClose: () => void }) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const [status, setStatus] = useState<CamStatus>("requesting");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const md = navigator.mediaDevices;
+        if (!md || typeof md.getUserMedia !== "function") {
+          throw new Error("当前环境不支持 getUserMedia");
+        }
+        const stream = await md.getUserMedia({ video: true, audio: false });
+        if (cancelled) {
+          stream.getTracks().forEach((t) => t.stop());
+          return;
+        }
+        streamRef.current = stream;
+        const v = videoRef.current;
+        if (v) {
+          v.srcObject = stream;
+          void v.play().catch(() => {});
+        }
+        setStatus("active");
+      } catch (err) {
+        if (cancelled) return;
+        setStatus("denied");
+        setError(err instanceof Error ? err.message : "无法访问摄像头");
+      }
+    })();
+    return () => {
+      cancelled = true;
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop());
+        streamRef.current = null;
+      }
+    };
+  }, []);
+
+  return (
+    <div className="cam-test-overlay">
+      <div className="cam-test-box">
+        <div className="cam-test-head">
+          <b>TEST-CAM · 摄像头测试</b>
+          <button className="text-button" onClick={onClose}>关闭并释放摄像头 ✕</button>
+        </div>
+        {status === "requesting" && <div className="cam-test-status">正在请求摄像头权限……</div>}
+        {status === "active" && (
+          <video ref={videoRef} className="cam-test-video" autoPlay muted playsInline />
+        )}
+        {status === "denied" && (
+          <div className="cam-test-status denied">
+            摄像头不可用或被拒绝：{error}
+            <br />请检查浏览器权限设置（地址栏摄像头图标）后重试。
+          </div>
+        )}
+        <div className="cam-test-foot">
+          {status === "active"
+            ? "摄像头已开启 · 关闭本面板后自动释放"
+            : status === "denied"
+              ? "未获得权限 · 不影响游戏流程"
+              : "授权后此处将显示实时画面"}
+        </div>
+      </div>
     </div>
   );
 }

@@ -31,6 +31,7 @@ import {
 import {
   AudioLayer,
   Breach,
+  CameraTest,
   ColdBackup,
   CompletionPage,
   EndingScreen,
@@ -38,6 +39,7 @@ import {
   LEGACY_NOTES,
   LegacyAccount,
   LegacyLogin,
+  LegacyWindowPage,
   ReviewPage,
   RulesAppender,
   StemPuzzle,
@@ -152,6 +154,7 @@ export default function Page() {
   const [survPending, setSurvPending] = useState<string | null>(null);
   const [survCount, setSurvCount] = useState(0);
   const [showWelcome, setShowWelcome] = useState(false);
+  const [showCamTest, setShowCamTest] = useState(false);
   const [debugNotice, setDebugNotice] = useState("");
   const [confirmReset, setConfirmReset] = useState(false);
   const chatBodyRef = useRef<HTMLDivElement>(null);
@@ -169,6 +172,17 @@ export default function Page() {
     const onHash = () => setRoute(parseRoute(window.location.hash));
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+
+  /* 跨窗口同步：本地备份线索页（#/legacy 新窗口）写回存档后，主窗口自动刷新状态 */
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === SAVE_KEY || e.key === null) {
+        setGame(readSavedGame());
+      }
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
   }, []);
 
   useEffect(() => {
@@ -327,6 +341,13 @@ export default function Page() {
     }
     // 调试模式后门
     const up = q.toUpperCase();
+    if (up === "TEST-CAM") {
+      // TEST-CAM：请求摄像头权限并显示实时画面（调试用）
+      setLastSearch("");
+      setSurvPending(null);
+      setShowCamTest(true);
+      return;
+    }
     if (DEBUG_CODES.includes(up)) {
       setLastSearch("");
       setSurvPending(null);
@@ -385,7 +406,7 @@ export default function Page() {
   useEffect(() => {
     const guard = () => {
       const r = parseRoute(window.location.hash);
-      if (r.name === "surveillance" || r.name === "breach") return;
+      if (r.name === "surveillance" || r.name === "breach" || r.name === "legacyWindow") return;
       if (!game.wakeDone && r.name !== "wake") {
         window.location.hash = "#/wake";
         return;
@@ -861,6 +882,18 @@ export default function Page() {
                   setGame((g) => ({ ...g, luvisLogin: true, case02: "partial" }));
                   applyRoute({ name: "legacy" });
                 }}
+                onOpenLegacyWindow={() => {
+                  // 密码验证通过的同一手势内弹出本地备份线索页（新窗口）
+                  try {
+                    const url = `${window.location.pathname}#/legacy`;
+                    const win = window.open(url, "_blank", "noopener");
+                    if (!win) {
+                      setDebugNotice("浏览器拦截了本地备份弹窗。请在地址栏允许本站弹出窗口；也可直接在主窗口的残留账号模块继续调查。");
+                    }
+                  } catch {
+                    /* 弹窗不可用时忽略，主窗口流程不受影响 */
+                  }
+                }}
               />
             )
           )}
@@ -1200,6 +1233,9 @@ export default function Page() {
     case "breach":
       body = renderBreach();
       break;
+    case "legacyWindow":
+      body = <LegacyWindowPage />;
+      break;
   }
 
   const routeKey =
@@ -1221,7 +1257,8 @@ export default function Page() {
           }}
         />
       )}
-      <AudioLayer game={game} />
+      {showCamTest && <CameraTest onClose={() => setShowCamTest(false)} />}
+      {route.name !== "legacyWindow" && <AudioLayer game={game} />}
     </>
   );
 }

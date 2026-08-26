@@ -263,6 +263,19 @@ test("v0.4 flow gaps: welcome window, evidence confirm, Aka-0 archive, QA segmen
   assert.match(page, /debugNextCase/);
   assert.match(page, /debugEndGame/);
 
+  // TEST-CAM：输入调试码后向浏览器请求摄像头权限
+  assert.match(page, /TEST-CAM/);
+  assert.match(page, /CameraTest/);
+  assert.match(page, /getUserMedia\(\{ video: true, audio: false \}\)/);
+
+  // 本地备份线索页（新窗口）：登录残留账号成功后弹窗，跨窗口同步写回存档
+  assert.match(page, /legacyWindow/);
+  assert.match(page, /#\/legacy/);
+  assert.match(page, /onOpenLegacyWindow/);
+  assert.match(page, /window\.open\(url, "_blank", "noopener"\)/);
+  assert.match(page, /addEventListener\("storage"/);
+  assert.match(page, /已找到线索 · 开启下一章节（CASE 03 冷备份）/);
+
   // 结局出口回归：结局页必须能返回首页（否则无法进入账号安全 → 遗忘重置）
   assert.match(page, /onBackHome/);
   assert.match(page, /返回首页/);

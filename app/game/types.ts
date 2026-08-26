@@ -46,7 +46,8 @@ export type Route =
   | { name: "ending" }
   | { name: "completion" }
   | { name: "breach" }
-  | { name: "surveillance"; source: string };
+  | { name: "surveillance"; source: string }
+  | { name: "legacyWindow" };
 
 export function parseRoute(hash: string): Route {
   const raw = hash.replace(/^#\/?/, "");
@@ -70,6 +71,8 @@ export function parseRoute(hash: string): Route {
       return { name: "breach" };
     case "surveillance":
       return { name: "surveillance", source: parts[1] ?? "unknown" };
+    case "legacy":
+      return { name: "legacyWindow" };
     default:
       return { name: "wake" };
   }
@@ -91,6 +94,7 @@ export function routeToHash(route: Route): string {
     case "completion": return "#/app/completion";
     case "breach": return "#/breach";
     case "surveillance": return `#/surveillance/${route.source}`;
+    case "legacyWindow": return "#/legacy";
   }
 }
 /* ---------------- 存档 ---------------- */
