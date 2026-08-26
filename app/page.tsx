@@ -1291,9 +1291,10 @@ export default function Page() {
       }}
       onViewTruth={() => {
         // 真结局：前往全案真相页。
-        // 用相对当前页面目录跳转（而非 assetPath 绝对路径），兼容 GitHub Pages 子路径、根域与本地预览。
+        // 用相对当前页面目录跳转（兼容 GitHub Pages 子路径、根域与本地预览）；
+        // 确保目录以 "/" 结尾，避免无尾斜杠 URL 拼出错误路径。
         const path = window.location.pathname;
-        const dir = path.substring(0, path.lastIndexOf("/") + 1);
+        const dir = path.endsWith("/") ? path : path.substring(0, path.lastIndexOf("/") + 1);
         window.location.href = `${dir}truth`;
       }}
     />
