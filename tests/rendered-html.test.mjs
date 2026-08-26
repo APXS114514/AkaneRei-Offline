@@ -309,4 +309,10 @@ test("v0.4 flow gaps: welcome window, evidence confirm, Aka-0 archive, QA segmen
   assert.doesNotMatch(page, /\$\{s\.keep \? "keep" : "drop"\}/);
   assert.match(page, /stem-voice\.wav", keep: true, color: "#8a94a0"/);
   assert.match(page, /stem-crash\.wav", keep: true, color: "#8a94a0"/);
+
+  // LuvisDrug 摩斯语音消息：残留会话中可播放的语音消息（摩斯码 LOOP 线索，§2.4）
+  assert.match(page, /luvis-morse\.wav/);
+  assert.match(page, /voice-card/);
+  assert.match(page, /audio: "\/audio\/luvis-morse\.wav"/);
+  assert.match(page, /静音规律是关键/);
 });

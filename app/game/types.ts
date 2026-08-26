@@ -189,6 +189,8 @@ export interface Msg {
   time?: string;
   status?: "read" | "unread";
   kind?: "normal" | "divider" | "abnormal" | "warn" | "ghost" | "blank";
+  /** 语音消息：音频文件路径（相对 public/），渲染为可播放的语音卡片 */
+  audio?: string;
 }
 
 export interface GameRecord {

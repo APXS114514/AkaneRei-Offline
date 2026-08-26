@@ -155,6 +155,8 @@ export default function Page() {
   const [survCount, setSurvCount] = useState(0);
   const [showWelcome, setShowWelcome] = useState(false);
   const [showCamTest, setShowCamTest] = useState(false);
+  const [voicePlaying, setVoicePlaying] = useState<string | null>(null);
+  const voiceRefs = useRef<Record<string, HTMLAudioElement | null>>({});
   const [debugNotice, setDebugNotice] = useState("");
   const [confirmReset, setConfirmReset] = useState(false);
   const chatBodyRef = useRef<HTMLDivElement>(null);
@@ -780,6 +782,61 @@ export default function Page() {
               return (
                 <div key={m.id} className={`chat-system ${m.kind === "warn" ? "warn" : "ghost"}`}>
                   {m.text}
+                </div>
+              );
+            }
+            if (m.audio) {
+              const isVoicePlaying = voicePlaying === m.id;
+              return (
+                <div key={m.id} className={`chat-msg ${m.from === "me" ? "me" : "them"}`}>
+                  {m.from !== "me" && (
+                    <div className="avatar" style={conv.kind === "ghost" ? { background: "#cfd6de", color: "#7a828c" } : { background: conv.color }}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      {conv.avatar ? <img src={assetPath(conv.avatar)} alt="" className="conv-avatar-img" /> : conv.initials}
+                    </div>
+                  )}
+                  <div>
+                    <div className={`voice-card ${m.kind === "abnormal" ? "abnormal" : ""}`}>
+                      <button
+                        className="voice-play"
+                        onClick={() => {
+                          const el = voiceRefs.current[m.id];
+                          if (!el) return;
+                          if (isVoicePlaying) {
+                            el.pause();
+                            setVoicePlaying(null);
+                          } else {
+                            if (voicePlaying) voiceRefs.current[voicePlaying]?.pause();
+                            el.volume = game.bgmVolume;
+                            void el.play().catch(() => setVoicePlaying(null));
+                            setVoicePlaying(m.id);
+                          }
+                        }}
+                        aria-label={isVoicePlaying ? "暂停语音" : "播放语音"}
+                      >
+                        {isVoicePlaying ? "❚❚" : "▶"}
+                      </button>
+                      <div className="voice-wave" aria-hidden="true">
+                        {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (
+                          <i key={i} className={isVoicePlaying ? "live" : ""} style={{ height: [12, 24, 36, 20, 30, 40, 16, 28][i] }} />
+                        ))}
+                      </div>
+                      <div className="voice-meta">
+                        <b>语音消息</b>
+                        <span>{m.text}</span>
+                      </div>
+                      <audio
+                        ref={(el) => { voiceRefs.current[m.id] = el; }}
+                        src={assetPath(m.audio)}
+                        onEnded={() => setVoicePlaying(null)}
+                        preload="auto"
+                      />
+                    </div>
+                    <div className="meta-line">
+                      <span className="time">{m.time}</span>
+                      {m.status === "read" && <span className="status">已读</span>}
+                    </div>
+                  </div>
                 </div>
               );
             }

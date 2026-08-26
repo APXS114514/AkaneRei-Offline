@@ -79,6 +79,15 @@ export function shioMessages(case02Done: boolean, case03Done: boolean): Msg[] {
 export function luvisMessages(): Msg[] {
   return [
     { id: "l1", from: "system", kind: "warn", text: "该账号已于 2026-06-02 注销。注销后仍检测到写入行为。" },
+    {
+      id: "l1v",
+      from: "them",
+      name: "LuvisDrug",
+      time: "06-01",
+      kind: "abnormal",
+      text: "约 5 秒 · 静音规律是关键",
+      audio: "/audio/luvis-morse.wav",
+    },
     { id: "l2", from: "them", name: "LuvisDrug", text: "一切都在我的本地备份里。查零信号。别让平台知道你在查。", time: "06-02", kind: "abnormal" },
     { id: "l3", from: "system", kind: "ghost", text: "【提示】在检索框中搜索：LuvisDrug / 零信号" },
   ];
