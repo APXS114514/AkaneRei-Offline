@@ -503,7 +503,7 @@ export default function Page() {
         <div className="opening-share">
           <div className="share-icon">🎵</div>
           <div className="share-meta">
-            <b>汐泊诺思 分享了歌单</b>
+            <b>汐○ 分享了歌单</b>
             <span>汐泊与零的歌单 · 14 首 · 「如果有一天你不再上线，我会把歌单听完。」</span>
           </div>
         </div>
