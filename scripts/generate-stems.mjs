@@ -159,6 +159,17 @@ generate("ui-surveillance-noise.wav", 0.7, (out, n, rng) => {
   }
 });
 
+/* ⑪ 跳吓音效：零信号演出第二次点击时的低频冲击 + 高频刺耳 */
+generate("ui-scare.wav", 0.7, (out, n, rng) => {
+  for (let i = 0; i < n; i++) {
+    const t = i / SAMPLE_RATE;
+    const low = Math.sin(2 * Math.PI * 55 * t) * Math.exp(-6 * t) * 0.9;
+    const shrill = (rng() * 2 - 1) * Math.exp(-9 * t) * 0.4;
+    const jitter = Math.sin(2 * Math.PI * 210 * t) * Math.exp(-7 * t) * 0.35;
+    out[i] = low + shrill + jitter;
+  }
+});
+
 // ⑤ 汐泊诺思告别语音：已由 Windows 中文语音（Microsoft Huihui）合成，
 //   见 public/audio/STEM_SOURCES.md。不要用占位哼唱覆盖该文件。
 

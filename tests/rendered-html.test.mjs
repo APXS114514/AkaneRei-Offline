@@ -286,9 +286,27 @@ test("v0.4 flow gaps: welcome window, evidence confirm, Aka-0 archive, QA segmen
   assert.match(page, /需要先完成对应章节的调查/);
   assert.match(page, /大小写不敏感匹配/);
 
-  // 背景音乐音量调节：存档字段 + 滑条 + 实际音量 = 音轨基准 × 玩家音量（含 duck 缩放）
+  // 背景音乐/全局音量调节：存档字段 + 滑条 + 实际音量 = 音轨基准 × 玩家音量（含 duck 缩放）
   assert.match(page, /bgmVolume/);
   assert.match(page, /type="range"/);
   assert.match(page, /applyVolume/);
   assert.match(page, /base \* volumeRef\.current/);
+  // 全局音量：界面音效（消息提示/证据确认/监视噪音）与分轨/告别语音共享同一音量
+  assert.match(page, /setMasterVolume/);
+  assert.match(page, /el\.volume = volume \?\? 1/);
+  // 事故音频防御：预加载 + 播放失败时给出明确提示
+  assert.match(page, /preload="auto"/);
+  assert.match(page, /音频无法播放/);
+
+  // Jumpscare：零信号监视演出第二次点击时全屏红闪 + 巨眼特写
+  assert.match(page, /scare-flash/);
+  assert.match(page, /playScare/);
+  assert.match(page, /play\("ui-scare"\)/);
+  assert.match(page, /prefers-reduced-motion/);
+
+  // 谜题不泄露答案：时间排序/分轨净化统一候选样式（去掉蓝色正确答案 / 灰色干扰项）
+  assert.doesNotMatch(page, /distractor/);
+  assert.doesNotMatch(page, /\$\{s\.keep \? "keep" : "drop"\}/);
+  assert.match(page, /stem-voice\.wav", keep: true, color: "#8a94a0"/);
+  assert.match(page, /stem-crash\.wav", keep: true, color: "#8a94a0"/);
 });

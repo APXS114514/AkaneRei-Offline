@@ -901,7 +901,7 @@ export default function Page() {
             <TimelineBoard done={game.case01Timeline} onDone={() => finishCase01Puzzle("timeline")} />
           )}
           {recId === "rec-audio-stems" && (
-            <StemPuzzle done={game.case01Stems} onDone={() => finishCase01Puzzle("stems")} />
+            <StemPuzzle done={game.case01Stems} onDone={() => finishCase01Puzzle("stems")} volume={game.bgmVolume} />
           )}
           {recId === "rec-luvisdrug-profile" && (
             game.case02 === "done" ? (
@@ -947,6 +947,7 @@ export default function Page() {
             <ColdBackup
               done={game.case03 === "done"}
               onSuccess={() => setGame((g) => ({ ...g, case03: "done" }))}
+              volume={game.bgmVolume}
             />
           )}
           {recId === "rec-identity-check" && (
@@ -1071,7 +1072,7 @@ export default function Page() {
           </button>
         </div>
         <div className="settings-row">
-          <span className="k">背景音乐音量</span>
+          <span className="k">全局音量</span>
           <div className="volume-row" style={{ width: 200, flex: "none" }}>
             <input
               className="volume-slider"
@@ -1080,7 +1081,7 @@ export default function Page() {
               max={100}
               value={Math.round(game.bgmVolume * 100)}
               onChange={(e) => setGame((g) => ({ ...g, bgmVolume: Number(e.target.value) / 100 }))}
-              aria-label="背景音乐音量"
+              aria-label="全局音量"
             />
             <span className="volume-val">{Math.round(game.bgmVolume * 100)}%</span>
           </div>

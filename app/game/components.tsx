@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { GameState, Route, SignalBall, SignalObstacle, Stem, TimelineItem } from "./types";
 import { SAVE_KEY, assetPath, readSavedGame } from "./types";
 import { RECORDS } from "./data";
-import { playMessageTone, playSurveillanceNoise } from "./sound";
+import { playMessageTone, playScare, playSurveillanceNoise, setMasterVolume } from "./sound";
 /* 展示组件 —— 由 app/page.tsx 拆分而来 */
 /* ---------------- CASE 01 谜题：时间线复原 ---------------- */
 
@@ -105,7 +105,7 @@ export function TimelineBoard({ done, onDone }: { done: boolean; onDone: () => v
       <div className="timeline-pool">
         {pool.length === 0 && <div className="puzzle-empty">候选事件已全部放入时间槽。</div>}
         {pool.map((it) => (
-          <button key={it.id} className={`puzzle-item ${it.correct ? "" : "distractor"}`} onClick={() => place(it.id)}>
+          <button key={it.id} className="puzzle-item" onClick={() => place(it.id)}>
             <b>{it.time}</b> {it.label}
           </button>
         ))}
@@ -131,10 +131,10 @@ export function TimelineBoard({ done, onDone }: { done: boolean; onDone: () => v
 /* ---------------- CASE 01 谜题：四轨分轨净化 ---------------- */
 
 const STEMS: Stem[] = [
-  { id: "voice", name: "① 通话人声", desc: "断续的人声与呼吸", file: "/audio/stem-voice.wav", keep: true, color: "#2f7cf6" },
+  { id: "voice", name: "① 通话人声", desc: "断续的人声与呼吸", file: "/audio/stem-voice.wav", keep: true, color: "#8a94a0" },
   { id: "ambient", name: "② 环境底噪", desc: "低频隆隆与远处车流", file: "/audio/stem-ambient.wav", keep: false, color: "#8a94a0" },
   { id: "ui", name: "③ 平台重连提示音", desc: "两声短提示音", file: "/audio/stem-ui.wav", keep: false, color: "#8a94a0" },
-  { id: "crash", name: "④ 断裂与撞击", desc: "断裂瞬态与坠落撞击", file: "/audio/stem-crash.wav", keep: true, color: "#b03a3a" },
+  { id: "crash", name: "④ 断裂与撞击", desc: "断裂瞬态与坠落撞击", file: "/audio/stem-crash.wav", keep: true, color: "#8a94a0" },
 ];
 
 const STEM_DECODED = [
@@ -144,9 +144,10 @@ const STEM_DECODED = [
   "断裂声 → 坠落撞击声 → 通话彻底中断。",
 ];
 
-export function StemPuzzle({ done, onDone }: { done: boolean; onDone: () => void }) {
+export function StemPuzzle({ done, onDone, volume }: { done: boolean; onDone: () => void; volume?: number }) {
   const [muted, setMuted] = useState<Record<string, boolean>>({});
   const [feedback, setFeedback] = useState<"none" | "wrong" | "right">("none");
+  const [playError, setPlayError] = useState("");
   const audioRefs = useRef<Record<string, HTMLAudioElement | null>>({});
   const [playing, setPlaying] = useState<string | null>(null);
 
@@ -158,10 +159,25 @@ export function StemPuzzle({ done, onDone }: { done: boolean; onDone: () => void
       setPlaying(null);
     } else {
       if (playing) audioRefs.current[playing]?.pause();
-      void el.play().catch(() => setPlaying(null));
+      el.volume = volume ?? 1;
+      void el
+        .play()
+        .then(() => setPlayError(""))
+        .catch((e: unknown) => {
+          setPlaying(null);
+          setPlayError(`音频无法播放：${e instanceof Error ? e.name : "未知错误"}（请检查浏览器音频输出）`);
+        });
       setPlaying(id);
     }
   };
+
+  // 全局音量变化时同步到各分轨 audio（React JSX 不支持 media 的 volume 属性）
+  useEffect(() => {
+    const v = volume ?? 1;
+    for (const el of Object.values(audioRefs.current)) {
+      if (el) el.volume = v;
+    }
+  }, [volume]);
 
   const toggleMute = (id: string) => {
     if (done) return;
@@ -184,7 +200,7 @@ export function StemPuzzle({ done, onDone }: { done: boolean; onDone: () => void
         const isMuted = muted[s.id] ?? false;
         const isPlaying = playing === s.id;
         return (
-          <div key={s.id} className={`stem-row ${isMuted ? "muted" : ""} ${s.keep ? "keep" : "drop"}`}>
+          <div key={s.id} className={`stem-row ${isMuted ? "muted" : ""}`}>
             <button
               className="stem-play"
               onClick={() => togglePlay(s.id)}
@@ -208,11 +224,13 @@ export function StemPuzzle({ done, onDone }: { done: boolean; onDone: () => void
               ref={(el) => { audioRefs.current[s.id] = el; }}
               src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}${s.file}`}
               onEnded={() => setPlaying(null)}
-              preload="none"
+              preload="auto"
             />
           </div>
         );
       })}
+
+      {playError && <div className="puzzle-feedback wrong">{playError}</div>}
 
       {feedback === "wrong" && <div className="puzzle-feedback wrong">串音未排除，或近场声源被误静音。请重新判断。</div>}
       {feedback === "right" && (
@@ -634,12 +652,21 @@ export function Breach({ onEscape }: { onEscape: () => void }) {
 export function SurveillanceScreen({ source, onExit }: { source: string; onExit: () => void }) {
   const [hits, setHits] = useState(0);
   const [showEscape, setShowEscape] = useState(false);
+  const [scare, setScare] = useState(false);
+  const scareTimerRef = useRef<number | null>(null);
 
   // 返回按钮延迟出现
   useEffect(() => {
     const t = window.setTimeout(() => setShowEscape(true), 1400);
     return () => window.clearTimeout(t);
   }, []);
+
+  useEffect(
+    () => () => {
+      if (scareTimerRef.current) window.clearTimeout(scareTimerRef.current);
+    },
+    []
+  );
 
   const click = () => {
     if (hits >= 2) {
@@ -648,7 +675,15 @@ export function SurveillanceScreen({ source, onExit }: { source: string; onExit:
     }
     const next = hits + 1;
     setHits(next);
-    if (next === 2) playSurveillanceNoise(); // 第二次点击播放一声低频噪音
+    if (next === 2) {
+      playSurveillanceNoise(); // 第二次点击播放一声低频噪音
+      // 零信号演出：第二次点击触发 Jumpscare（尊重系统的「减少动态效果」偏好）
+      if (source === "零信号" && !(window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false)) {
+        playScare();
+        setScare(true);
+        scareTimerRef.current = window.setTimeout(() => setScare(false), 520);
+      }
+    }
   };
 
   const dodged = hits >= 2;
@@ -680,6 +715,11 @@ export function SurveillanceScreen({ source, onExit }: { source: string; onExit:
         </button>
       )}
       <div className="foot">ECHOS · 零信号 · 该页面未收录于任何索引</div>
+      {scare && (
+        <div className="scare-flash" aria-hidden="true">
+          <div className="scare-eye" />
+        </div>
+      )}
     </div>
   );
 }
@@ -772,7 +812,7 @@ export function RulesAppender() {
 export const COLD_BACKUP_PASSWORD = "XIBONUOSI";
 export const GREETING_COUNT = 208;
 
-export function ColdBackup({ done, onSuccess }: { done: boolean; onSuccess: () => void }) {
+export function ColdBackup({ done, onSuccess, volume }: { done: boolean; onSuccess: () => void; volume?: number }) {
   const [pw, setPw] = useState("");
   const [error, setError] = useState("");
   const [wrongCount, setWrongCount] = useState(0);
@@ -799,6 +839,12 @@ export function ColdBackup({ done, onSuccess }: { done: boolean; onSuccess: () =
       })),
     []
   );
+
+  // 全局音量变化时同步告别语音（React JSX 不支持 media 的 volume 属性）
+  useEffect(() => {
+    const el = farewellRef.current;
+    if (el) el.volume = volume ?? 1;
+  }, [volume]);
 
   return (
     <div className="puzzle-box">
@@ -861,6 +907,7 @@ export function ColdBackup({ done, onSuccess }: { done: boolean; onSuccess: () =
                     el.pause();
                     setFarewellPlaying(false);
                   } else {
+                    el.volume = volume ?? 1;
                     void el.play().catch(() => setFarewellPlaying(false));
                     setFarewellPlaying(true);
                   }
@@ -877,7 +924,7 @@ export function ColdBackup({ done, onSuccess }: { done: boolean; onSuccess: () =
                 ref={farewellRef}
                 src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/audio/shio-farewell.wav`}
                 onEnded={() => setFarewellPlaying(false)}
-                preload="none"
+                preload="auto"
               />
             </div>
             <div className="backup-note" style={{ marginTop: 8 }}>
@@ -1457,6 +1504,11 @@ export function AudioLayer({ game }: { game: GameState }) {
   const trackRef = useRef<BgmTrack>("rain");
   const duckedRef = useRef(false);
   volumeRef.current = game.bgmVolume;
+
+  // 全局音量：同步给界面音效（消息提示 / 证据确认 / 监视噪音）
+  useEffect(() => {
+    setMasterVolume(game.bgmVolume);
+  }, [game.bgmVolume]);
 
   // 音轨选择（优先级从高到低）：惊悚 > 告别 > 悬疑 > 默认雨声。
   // 默认全天候保留深夜雨声作为环境底噪；检索到「零信号」后进入悬疑氛围，

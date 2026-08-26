@@ -113,9 +113,13 @@ assert.deepEqual(memOrder, ["m-1", "m-2", "m-3"], "记忆覆盖阻断三份平�
 
 // §1.3 事故夜时间线答案；§1.4 录音净化规则
 assert.match(src, /TIMELINE_ANSWER = \["t-0300", "t-0406", "t-0407", "t-0408", "t-0409"\]/, "时间线答案契约");
-assert.match(src, /keep: true, color: "#2f7cf6"/, "通话人声保留");
-assert.match(src, /keep: false, color: "#8a94a0"/, "环境底噪与平台提示音静音");
-assert.match(src, /keep: true, color: "#b03a3a"/, "断裂与撞击保留");
+assert.match(src, /stem-voice\.wav", keep: true/, "通话人声保留");
+assert.match(src, /stem-ambient\.wav", keep: false/, "环境底噪静音");
+assert.match(src, /stem-ui\.wav", keep: false/, "平台提示音静音");
+assert.match(src, /stem-crash\.wav", keep: true/, "断裂与撞击保留");
+// 分轨颜色统一（不泄露「保留/静音」答案）；时间排序候选统一（干扰项不再灰色）
+assert.doesNotMatch(src, /color: "#2f7cf6"|color: "#b03a3a"/, "分轨不应以颜色区分 keep/drop");
+assert.doesNotMatch(src, /distractor/, "时间排序干扰项不应有特殊样式");
 
 /* ---------------- 2) 检索范围表（对照流程文档「检索词 → 允许返回的最大范围」） ---------------- */
 

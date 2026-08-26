@@ -6,12 +6,20 @@ import { assetPath } from "./types";
 
 const cache: Record<string, HTMLAudioElement | undefined> = {};
 
+/** 全局音量（0–1），由 AudioLayer 随玩家设置同步；所有界面音效共享 */
+let masterVolume = 1;
+
+export function setMasterVolume(v: number): void {
+  masterVolume = Math.max(0, Math.min(1, v));
+}
+
 function ensure(name: string): HTMLAudioElement | null {
   if (typeof window === "undefined") return null;
   let el = cache[name];
   if (!el) {
     el = new Audio(assetPath(`/audio/${name}.wav`));
     el.preload = "auto";
+    el.volume = masterVolume;
     cache[name] = el;
   }
   return el;
@@ -22,6 +30,7 @@ function play(name: string): void {
   if (!el) return;
   try {
     el.currentTime = 0;
+    el.volume = masterVolume;
     void el.play().catch(() => {
       /* 音频不可用时不阻塞 */
     });
@@ -40,4 +49,8 @@ export function playEvidenceConfirm(): void {
 
 export function playSurveillanceNoise(): void {
   play("ui-surveillance-noise");
+}
+
+export function playScare(): void {
+  play("ui-scare");
 }
