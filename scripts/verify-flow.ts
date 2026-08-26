@@ -95,10 +95,13 @@ assert.equal(PLAYLIST_TRACKS.length, 14, "歌单 14 首曲目");
 assert.equal(PLAYLIST_LYRICS.length, 14, "歌单歌词应为 14 首");
 assert.match(
   comp,
-  /who\.trim\(\) === "晓茜" && status === "已死亡" && relation\.trim\(\) === "紧急联系人"/,
-  "隐藏复核页三项结论：晓茜 / 已死亡 / 紧急联系人"
+  /who\.trim\(\) === "晓倩" && status === "已死亡" && relation\.trim\(\) === "紧急联系人"/,
+  "隐藏复核页三项结论：晓倩 / 已死亡 / 紧急联系人"
 );
-assert.match(comp, /onChoose\("none"\)/, "重新选择结局返回注销页");
+// 结局契约：选定后不可重新选择；真结局 → 真相页；坏结局 → 轮回回登录（loopHint）
+assert.doesNotMatch(comp, /onChoose\("none"\)/, "结局选定后不应再提供重新选择");
+assert.match(src, /onViewTruth/, "真结局提供查看全案真相入口");
+assert.match(src, /loopHint/, "坏结局轮回提示标记");
 
 // §4.4 账号来源校验兼容值
 const field = (key: string) => {
@@ -309,11 +312,11 @@ function docOrder(): string[] {
   act("检索「质检」→ 第二段：LuvisDrug 注销前私信", (n) => { openViaSearch(n, "质检", "rec-qa-2"); });
   act("检索「质检」→ 第三段：汐泊诺思日常问候", (n) => { openViaSearch(n, "质检", "rec-qa-3"); });
   act("检索「质检」→ 第四段：平台客服记录（冷备份解锁）", (n) => { openViaSearch(n, "质检", "rec-qa-4"); });
-  act("检索「事故」→ 4·08 坠亡事故通报（死者晓茜，紧急联系人汐○）", (n) => { openViaSearch(n, "事故", "rec-accident"); });
+  act("检索「事故」→ 4·08 坠亡事故通报（死者晓倩，紧急联系人汐○）", (n) => { openViaSearch(n, "事故", "rec-accident"); });
   act("四段质检 + 事故 + 守则 + CASE 03 → reviewReady 复核通知出现", (n) => {
     assert.ok(reviewReady(n), "隐藏复核页入口条件应满足");
   });
-  act("隐藏复核页提交：晓茜 / 已死亡 / 紧急联系人", (n) => { n.aka0Confirmed = true; });
+  act("隐藏复核页提交：晓倩 / 已死亡 / 紧急联系人", (n) => { n.aka0Confirmed = true; });
   act("确认后检索「Aka-0」→ 只返回《Aka-0 账号身份复核归档》", (n) => {
     const ids = searchHit("Aka-0").filter((id) => !RECORDS[id].require || RECORDS[id].require(n));
     assert.deepEqual(ids, ["rec-aka0-archive"], "确认后精确检索 Aka-0 只返回归档");
@@ -324,11 +327,18 @@ function docOrder(): string[] {
   act("阻断记忆覆盖：急救回执 → 运营商通话详单 → 本地未同步录音", (n) => { n.memoryBlocked = true; });
 
   // §5 结局
-  act("好结局「已离线」：提交全部证据并注销账号", (n) => {
+  act("好结局「已离线」：提交全部证据并注销账号（选定后不可重新选择）", (n) => {
     assert.ok(endingAvailable(n), "好结局前置（CASE 01-03 + Aka-0 + 记忆阻断）应满足");
     n.ending = "good";
   });
-  act("重新选择结局 → 返回注销页 → 坏结局「重新登录」", (n) => { n.ending = "none"; n.ending = "bad"; });
+  act("真结局 → 查看全案真相页 → 底部回到最开始登录界面", (n) => {
+    n.loggedIn = false;
+  });
+  act("坏结局路线：只处理今天的未读 → 轮回回登录，提示缺少了什么（loopHint）", (n) => {
+    n.ending = "bad";
+    n.loggedIn = false;
+    n.loopHint = true;
+  });
   return steps;
 }
 

@@ -200,6 +200,18 @@ export default function Page() {
     chatBodyRef.current?.scrollTo({ top: chatBodyRef.current.scrollHeight });
   }, [route]);
 
+  /* 打开会话后标记已读（未读红点消失，避免与新消息混淆） */
+  useEffect(() => {
+    if (route.name === "chat") {
+      const convId = route.convId;
+      if (!game.readConvs.includes(convId)) {
+        setGame((g) =>
+          g.readConvs.includes(convId) ? g : { ...g, readConvs: [...g.readConvs, convId] }
+        );
+      }
+    }
+  }, [route, game.readConvs]);
+
   /* 新证据写入调查台账时播放一次独立的低音确认提示；刷新/恢复旧存档不重复播放 */
   useEffect(() => {
     const prev = prevOpenedRef.current;
@@ -325,7 +337,7 @@ export default function Page() {
       setLoginFlash(true);
       window.setTimeout(() => {
         setLoginFlash(false);
-        setGame((g) => ({ ...g, loggedIn: true }));
+        setGame((g) => ({ ...g, loggedIn: true, loopHint: false }));
         applyRoute({ name: "home" });
       }, 620);
     } else {
@@ -531,6 +543,12 @@ export default function Page() {
 
   const renderLogin = () => (
     <div className={`login-screen ${loginFlash ? "login-flash" : ""}`}>
+      {game.loopHint && (
+        <div className="login-loop-hint">
+          <b>轮回</b>
+          <span>一切都像第一次一样。你缺少了什么？——真相，被留在了 04:08 之前。</span>
+        </div>
+      )}
       <div className="login-card card">
         <div className="traffic-lights" aria-hidden="true"><i /><i /><i /></div>
         <div className="login-logo">
@@ -751,28 +769,31 @@ export default function Page() {
         </div>
       )}
       <div className="conv-section">会话</div>
-      {CONVS.map((c) => (
-        <button
-          key={c.id}
-          className={`conv-item ${route.name === "chat" && route.convId === c.id ? "active" : ""}`}
-          onClick={() => goTo({ name: "chat", convId: c.id })}
-        >
-          <div className={`conv-avatar ${c.kind === "ghost" ? "ghosty" : ""}`} style={c.kind === "ghost" ? undefined : { background: c.color }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            {c.avatar ? <img src={assetPath(c.avatar)} alt="" className="conv-avatar-img" /> : c.initials}
-          </div>
-          <div className="conv-meta">
-            <div className="row">
-              <span className="name">{c.id === "shio" ? shioName(game) : c.name}</span>
-              <span className="time">{c.time}</span>
+      {CONVS.map((c) => {
+        const unread = c.unread && !game.readConvs.includes(c.id) ? c.unread : 0;
+        return (
+          <button
+            key={c.id}
+            className={`conv-item ${route.name === "chat" && route.convId === c.id ? "active" : ""}`}
+            onClick={() => goTo({ name: "chat", convId: c.id })}
+          >
+            <div className={`conv-avatar ${c.kind === "ghost" ? "ghosty" : ""}`} style={c.kind === "ghost" ? undefined : { background: c.color }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              {c.avatar ? <img src={assetPath(c.avatar)} alt="" className="conv-avatar-img" /> : c.initials}
             </div>
-            <div className="preview">
-              {c.unread ? <span className="unread">{c.preview}</span> : c.preview}
+            <div className="conv-meta">
+              <div className="row">
+                <span className="name">{c.id === "shio" ? shioName(game) : c.name}</span>
+                <span className="time">{c.time}</span>
+              </div>
+              <div className="preview">
+                {unread ? <span className="unread">{c.preview}</span> : c.preview}
+              </div>
             </div>
-          </div>
-          {c.unread ? <div className="conv-badge">{c.unread}</div> : <span className={`status-tag ${c.statusClass ?? ""}`}>{c.kind === "ghost" ? "已注销" : c.kind === "bot" ? "服务号" : ""}</span>}
+          {unread ? <div className="conv-badge">{unread}</div> : <span className={`status-tag ${c.statusClass ?? ""}`}>{c.kind === "ghost" ? "已注销" : c.kind === "bot" ? "服务号" : ""}</span>}
         </button>
-      ))}
+        );
+      })}
     </div>
   );
 
@@ -1262,7 +1283,15 @@ export default function Page() {
     <EndingScreen
       ending={game.ending}
       onChoose={(e) => setGame((g) => ({ ...g, ending: e }))}
-      onBackHome={() => applyRoute({ name: "home" })}
+      onBackHome={() => {
+        // 结局返回：直接回到最开始登录界面（坏结局触发轮回提示）
+        setGame((g) => ({ ...g, loggedIn: false, loopHint: g.ending === "bad" }));
+        applyRoute({ name: "login" });
+      }}
+      onViewTruth={() => {
+        // 真结局：前往全案真相页
+        window.location.href = assetPath("/truth");
+      }}
     />
   );
 

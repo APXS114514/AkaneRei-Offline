@@ -115,11 +115,15 @@ export interface GameState {
   identityCheck: boolean;
   memoryBlocked: boolean;
   ending: "none" | "good" | "bad";
+  /** 坏结局轮回标记：登录页提示「缺少了什么」 */
+  loopHint: boolean;
   nickname: string;
   gameFinished: boolean;
   bgmMuted: boolean;
   bgmVolume: number;
   welcomeShown: boolean;
+  /** 已打开过的会话 id（打开后未读红点消失，避免与新消息混淆） */
+  readConvs: string[];
   surveillanceSeen: Record<string, boolean>;
   lastRoute: string;
 }
@@ -140,11 +144,13 @@ export const initialGame: GameState = {
   identityCheck: false,
   memoryBlocked: false,
   ending: "none",
+  loopHint: false,
   nickname: "",
   gameFinished: false,
   bgmMuted: false,
   bgmVolume: 1,
   welcomeShown: false,
+  readConvs: [],
   surveillanceSeen: {},
   lastRoute: "#/wake",
 };
@@ -159,6 +165,7 @@ export function readSavedGame(): GameState {
       ...parsed,
       openedRecords: Array.isArray(parsed.openedRecords) ? parsed.openedRecords : [],
       luvisNotes: Array.isArray(parsed.luvisNotes) ? parsed.luvisNotes : [],
+      readConvs: Array.isArray(parsed.readConvs) ? parsed.readConvs : [],
       surveillanceSeen:
         parsed.surveillanceSeen && typeof parsed.surveillanceSeen === "object"
           ? parsed.surveillanceSeen

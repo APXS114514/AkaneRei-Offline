@@ -113,8 +113,8 @@ test("CASE 03 playlist and cold backup exist with locked password", async () => 
   assert.match(page, /Rtwyzz/);
   assert.match(page, /Roy/);
   // 主角实名线索允许出现
-  assert.match(page, /茜，我该拉住你的/);
-  assert.match(page, /晓茜/);
+  assert.match(page, /倩，我该拉住你的/);
+  assert.match(page, /晓倩/);
   // 其他人物真名在游戏内一律不揭示
   for (const name of ["巴印", "李铭泽", "王镓铭", "刘睿航", "李磊", "张贤德"]) {
     assert.doesNotMatch(page, new RegExp(name), `游戏源码不应出现真名：${name}`);
@@ -154,7 +154,7 @@ test("CASE 04 identity check, memory block and endings exist", async () => {
 
   // 隐藏复核页三项结论
   assert.match(page, /Aka-0 是谁？/);
-  assert.match(page, /晓茜/);
+  assert.match(page, /晓倩/);
   assert.match(page, /紧急联系人/);
   // 身份核对原始字段
   assert.match(page, /事故时间戳/);
@@ -169,7 +169,8 @@ test("CASE 04 identity check, memory block and endings exist", async () => {
   assert.match(page, /提交全部证据并注销账号/);
   assert.match(page, /晚安，不再是第一次见你/);
   assert.match(page, /今天也是第一次见你。/);
-  assert.match(page, /重新选择结局/);
+  assert.match(page, /查看全案真相/);
+  assert.match(page, /轮回/);
 });
 
 test("completion page and signal game exist", async () => {
@@ -182,6 +183,10 @@ test("completion page and signal game exist", async () => {
   assert.match(page, /最初的故事原稿/);
   assert.match(page, /创作者说/);
   assert.match(page, /#\/app\/completion/);
+  // 小游戏难度优化：信号球为可选加分，只需越过 14 障碍通关
+  assert.match(page, /信号球 \{caught\}（可选加分）/);
+  assert.match(page, /信号球可接可不接/);
+  assert.match(page, /不要求接满/);
   // 音频分层
   assert.match(page, /AudioLayer/);
   assert.match(page, /background-suspense\.mp3/);
@@ -201,6 +206,9 @@ test("truth page is a separate static route with spoiler warning", async () => {
   assert.match(html, /全案真相/);
   assert.match(html, /完整剧透/);
   assert.match(html, /为了不断线而死/);
+  // 真结局流程：真相页底部提供「回到最开始登录界面」
+  assert.match(html, /回到最开始登录界面/);
+  assert.match(html, /晓倩/);
 });
 
 test("v0.4 flow gaps: welcome window, evidence confirm, Aka-0 archive, QA segments, camera, re-choice", async () => {
@@ -241,8 +249,13 @@ test("v0.4 flow gaps: welcome window, evidence confirm, Aka-0 archive, QA segmen
   // 账号安全中心「账号来源与同名主体复核」（§4.1）
   assert.match(page, /账号来源与同名主体复核/);
 
-  // 重新选择结局返回注销页（§5），而非直接切换另一结局
-  assert.match(page, /onChoose\("none"\)/);
+  // 结局：选定后不能重新选择；真结局 → 真相页；坏结局 → 轮回回登录
+  assert.doesNotMatch(page, /onChoose\("none"\)/);
+  assert.match(page, /查看全案真相/);
+  assert.match(page, /回到最开始/);
+  assert.match(page, /轮回/);
+  assert.match(page, /你缺少了什么/);
+  assert.match(page, /loopHint/);
 
   // 默认全天候保留深夜雨声作为环境底噪；悬疑/惊悚/告别阶段才切换音轨
   assert.match(page, /return "rain";/);
@@ -276,10 +289,11 @@ test("v0.4 flow gaps: welcome window, evidence confirm, Aka-0 archive, QA segmen
   assert.match(page, /addEventListener\("storage"/);
   assert.match(page, /已找到线索 · 开启下一章节（CASE 03 冷备份）/);
 
-  // 结局出口回归：结局页必须能返回首页（否则无法进入账号安全 → 遗忘重置）
+  // 结局出口回归：结局页可返回登录页（坏结局轮回/选择页返回登录）
   assert.match(page, /onBackHome/);
-  assert.match(page, /返回首页/);
-  assert.match(page, /想重新开始/);
+  assert.match(page, /返回登录/);
+  assert.match(page, /真相，在下一页等你/);
+  assert.match(page, /轮回即将开始/);
 
   // 搜索解锁提示：命中索引但被章节门槛锁定时给出提示，而非「没有找到」
   assert.match(page, /kind: "locked"/);
@@ -344,4 +358,14 @@ test("v0.4 flow gaps: welcome window, evidence confirm, Aka-0 archive, QA segmen
   assert.match(page, /歌单简介（女声）/);
   assert.match(page, /我会把歌单听完/);
   assert.match(page, /terms: \["歌词", "潮汐", "夜航", "别等", "天亮以后", "未读", "已读"\]/);
+
+  // 未读红点：打开会话后标记已读（readConvs），红点消失避免与新消息混淆
+  assert.match(page, /readConvs/);
+  assert.match(page, /c\.unread && !game\.readConvs\.includes\(c\.id\)/);
+
+  // 结局返回登录页：坏结局触发轮回提示（loopHint），好结局经真相页返回
+  assert.match(page, /结局返回：直接回到最开始登录界面（坏结局触发轮回提示）/);
+  assert.match(page, /onViewTruth/);
+  assert.match(page, /回到最开始登录界面/);
+  assert.match(page, /查看报告/);
 });

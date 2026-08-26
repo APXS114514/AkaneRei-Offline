@@ -1053,7 +1053,7 @@ export function ReviewPage({ done, onDone }: { done: boolean; onDone: () => void
   const submit = () => {
     if (done) return;
     const ok =
-      who.trim() === "晓茜" && status === "已死亡" && relation.trim() === "紧急联系人";
+      who.trim() === "晓倩" && status === "已死亡" && relation.trim() === "紧急联系人";
     if (ok) {
       setError("");
       onDone();
@@ -1084,7 +1084,7 @@ export function ReviewPage({ done, onDone }: { done: boolean; onDone: () => void
         </div>
         <div className="login-field">
           <label htmlFor="rv-rel">汐泊诺思与 AkaneRei 的关系</label>
-          <input id="rv-rel" className="input-field" value={relation} onChange={(e) => setRelation(e.target.value)} placeholder="对照紧急联系人字段" />
+          <input id="rv-rel" className="input-field" value={relation} onChange={(e) => setRelation(e.target.value)} placeholder="查看报告" />
         </div>
         <div className="login-error">{error}</div>
         <button className="primary-button" style={{ width: "100%" }} disabled={done} onClick={submit}>
@@ -1246,9 +1246,19 @@ export function IdentityCheck({
 
 /* ---------------- 结局 ---------------- */
 
-
-export function EndingScreen({ ending, onChoose, onBackHome }: { ending: GameState["ending"]; onChoose: (e: "good" | "bad" | "none") => void; onBackHome: () => void }) {
+export function EndingScreen({
+  ending,
+  onChoose,
+  onBackHome,
+  onViewTruth,
+}: {
+  ending: GameState["ending"];
+  onChoose: (e: "good" | "bad" | "none") => void;
+  onBackHome: () => void;
+  onViewTruth: () => void;
+}) {
   if (ending === "good") {
+    // 真结局：看完真相后，由真相页底部回到最开始登录界面
     return (
       <div className="ending-screen good">
         <div className="ending-box">
@@ -1264,15 +1274,20 @@ export function EndingScreen({ ending, onChoose, onBackHome }: { ending: GameSta
             04:08 之后，账号没有回来。平台显示：「该账号已注销，联系人已解除关联。」
           </p>
           <div className="ending-actions">
-            <button className="primary-button" onClick={() => onChoose("none")}>重新选择结局</button>
-            <button className="back-home" onClick={onBackHome}>返回首页</button>
+            <button className="primary-button" onClick={onViewTruth}>查看全案真相 →</button>
           </div>
-          <p className="ending-foot">想重新开始？首页 → 账号安全 → 遗忘 · 清除本机数据。</p>
+          <p className="ending-foot">真相，在下一页等你。看完之后，一切会回到最开始。</p>
         </div>
       </div>
     );
   }
   if (ending === "bad") {
+    // 坏结局：轮回——演出结束后自动回到登录界面，暗示「缺少了什么」
+    useEffect(() => {
+      const t = window.setTimeout(onBackHome, 5200);
+      return () => window.clearTimeout(t);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
     return (
       <div className="ending-screen bad">
         <div className="ending-box">
@@ -1284,12 +1299,13 @@ export function EndingScreen({ ending, onChoose, onBackHome }: { ending: GameSta
           <div className="ending-message">「今天也是第一次见你。」</div>
           <p className="ending-copy">
             这一次，她不再期待回复。N9Rtz 依旧已读不回。
+            <br />
+            你缺少了什么？一切都会像第一次一样，重来一遍。
           </p>
           <div className="ending-actions">
-            <button className="primary-button" onClick={() => onChoose("none")}>重新选择结局</button>
-            <button className="back-home" onClick={onBackHome}>返回首页</button>
+            <button className="back-home" onClick={onBackHome}>回到最开始</button>
           </div>
-          <p className="ending-foot">想重新开始？首页 → 账号安全 → 遗忘 · 清除本机数据。</p>
+          <p className="ending-foot">轮回即将开始……这一次，你会查下去吗？</p>
         </div>
       </div>
     );
@@ -1305,7 +1321,7 @@ export function EndingScreen({ ending, onChoose, onBackHome }: { ending: GameSta
         <div className="ending-actions">
           <button className="primary-button" onClick={() => onChoose("good")}>提交全部证据并注销账号</button>
           <button className="primary-button danger-button" onClick={() => onChoose("bad")}>只处理今天的未读，重新登录</button>
-          <button className="back-home" onClick={onBackHome}>返回首页</button>
+          <button className="back-home" onClick={onBackHome}>返回登录</button>
         </div>
       </div>
     </div>
@@ -1325,7 +1341,8 @@ export function buildSignalCourse(): { obstacles: SignalObstacle[]; balls: Signa
     const h = 28 + (i % 3) * 9;
     obstacles.push({ x, w: 14, h });
     if (i < SIGNAL_OBSTACLE_COUNT - 1) {
-      balls.push({ x: x + 90, y: 150 - (i % 4) * 12, r: 7, taken: false });
+      // 信号球为可选加分：放在障碍前较低位置，正常跳跃即可顺路接到
+      balls.push({ x: x + 80, y: 158 - (i % 4) * 10, r: 7, taken: false });
     }
     x += 190 + (i % 4) * 26;
   }
@@ -1345,7 +1362,7 @@ export function SignalGame({ onFinish }: { onFinish: () => void }) {
     course: buildSignalCourse(),
     progress: 0,
     balls: 0,
-    speed: 3.2,
+    speed: 2.9,
     done: false,
   });
 
@@ -1494,16 +1511,17 @@ export function SignalGame({ onFinish }: { onFinish: () => void }) {
     <div className="game-box">
       <div className="game-hud">
         <span>断线障碍 {Math.min(passed, SIGNAL_OBSTACLE_COUNT)}/{SIGNAL_OBSTACLE_COUNT}</span>
-        <span>信号球 {caught}</span>
+        <span>信号球 {caught}（可选加分）</span>
         <span className="game-controls">空格 / ↑ / 点击 跳跃</span>
       </div>
+      <div className="game-hint">只需越过 14 个断线障碍抵达 04:09；信号球可接可不接，不影响通关。</div>
       <canvas
         ref={canvasRef}
         width={640}
         height={240}
         className={resetFlash > 0 ? "game-flash" : ""}
         style={{ width: "100%", imageRendering: "pixelated", touchAction: "none" }}
-        aria-label="保持信号：跳跃接住信号球并跳过断线障碍"
+        aria-label="保持信号：跳跃跳过断线障碍（可顺路接住信号球）"
       />
       {finished && (
         <div className="game-end">
@@ -1546,7 +1564,7 @@ export function CompletionPage({
       </div>
       <div className="completion-section">
         <h3>彩蛋：保持信号</h3>
-        <p className="completion-hint">点击或按空格/上方向键跳跃。接住信号球，跳过 14 个断线障碍，抵达 04:09。</p>
+        <p className="completion-hint">点击或按空格/上方向键跳跃，越过 14 个断线障碍抵达 04:09 即通关。信号球是可选加分，不要求接满。</p>
         <SignalGame onFinish={onGameFinish} />
       </div>
       {gameFinished && (

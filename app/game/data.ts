@@ -51,7 +51,7 @@ export function n9rtzMessages(case01: GameState["case01"]): Msg[] {
         id: "n4",
         from: "them",
         name: "N9Rtz",
-        text: "你终于查到这里了。你可能不记得我了。\n那天我在电话里听到了一切…… 我听你掉下去。\n你说信号断了就去弄路由器，我说别去。茜，我该拉住你的。\nLuvisDrug 说这个平台有问题，让我别再跟你说话——然后他自己不见了。查他。",
+        text: "你终于查到这里了。你可能不记得我了。\n那天我在电话里听到了一切…… 我听你掉下去。\n你说信号断了就去弄路由器，我说别去。倩，我该拉住你的。\nLuvisDrug 说这个平台有问题，让我别再跟你说话——然后他自己不见了。查他。",
         time: "现在",
         kind: "abnormal",
       },
@@ -272,16 +272,16 @@ export const RECORDS: Record<string, GameRecord> = {
     chapter: "case04",
     title: "4·08 坠亡事故通报",
     source: "本地新闻 · 2026-04-09",
-    snippet: "死者：晓茜。紧急联系人：汐○。事故时间：04:08。",
+    snippet: "死者：晓倩。紧急联系人：汐○。事故时间：04:08。",
     body: [
       "2026 年 4 月 8 日凌晨 4 时 08 分，一名女子从高层住宅阳台坠落，当场死亡。",
-      "死者：晓茜。",
+      "死者：晓倩。",
       "紧急联系人栏登记为「汐○」，身份待核。",
       "现场勘查显示，死者坠落前曾探身窗外。事故原因仍在调查中。",
     ],
     fields: [
       { k: "事故时间", v: "2026-04-08 04:08" },
-      { k: "死者", v: "晓茜" },
+      { k: "死者", v: "晓倩" },
       { k: "紧急联系人", v: "汐○（掩码）" },
       { k: "调查结论", v: "进行中（非司法定论）" },
     ],
@@ -515,13 +515,13 @@ export const RECORDS: Record<string, GameRecord> = {
     snippet: "人工复核提交后生成的只读归档：Aka-0 与当前账号的身份关系判断及其依据。",
     body: [
       "复核已完成，本归档为只读，不再接受修改。",
-      "Aka-0 是谁：晓茜。",
+      "Aka-0 是谁：晓倩。",
       "AkaneRei 账号状态：已死亡。",
       "汐泊诺思与 AkaneRei 的关系：紧急联系人（材料可证明的原始字段）。",
       "归档保存玩家的人工判断及其依据，不解释「同一意识」或循环机制。",
     ],
     fields: [
-      { k: "Aka-0 是谁", v: "晓茜" },
+      { k: "Aka-0 是谁", v: "晓倩" },
       { k: "AkaneRei 账号状态", v: "已死亡" },
       { k: "汐泊诺思与 AkaneRei 的关系", v: "紧急联系人" },
       { k: "归档类型", v: "只读（人工复核提交后生成）" },
@@ -628,7 +628,7 @@ export const SEARCH_INDEX: { terms: string[]; recId: string }[] = [
   { terms: ["APXS"], recId: "rec-apxs-profile" },
   { terms: ["Rtwyzz"], recId: "rec-rtwyzz-profile" },
   { terms: ["Roy"], recId: "rec-roy-profile" },
-  { terms: ["事故", "坠亡", "晓茜"], recId: "rec-accident" },
+  { terms: ["事故", "坠亡", "晓倩"], recId: "rec-accident" },
 ];
 
 export const SURVEILLANCE_TERMS = ["回声小助手", "零信号", "Aka-0"];
