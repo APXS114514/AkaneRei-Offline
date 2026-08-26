@@ -262,4 +262,9 @@ test("v0.4 flow gaps: welcome window, evidence confirm, Aka-0 archive, QA segmen
   assert.match(page, /APXS-END2/);
   assert.match(page, /debugNextCase/);
   assert.match(page, /debugEndGame/);
+
+  // 结局出口回归：结局页必须能返回首页（否则无法进入账号安全 → 遗忘重置）
+  assert.match(page, /onBackHome/);
+  assert.match(page, /返回首页/);
+  assert.match(page, /想重新开始/);
 });

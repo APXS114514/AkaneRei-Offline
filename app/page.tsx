@@ -1088,6 +1088,7 @@ export default function Page() {
     <EndingScreen
       ending={game.ending}
       onChoose={(e) => setGame((g) => ({ ...g, ending: e }))}
+      onBackHome={() => applyRoute({ name: "home" })}
     />
   );
 

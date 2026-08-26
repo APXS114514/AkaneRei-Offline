@@ -927,7 +927,7 @@ export function IdentityCheck({
 /* ---------------- 结局 ---------------- */
 
 
-export function EndingScreen({ ending, onChoose }: { ending: GameState["ending"]; onChoose: (e: "good" | "bad" | "none") => void }) {
+export function EndingScreen({ ending, onChoose, onBackHome }: { ending: GameState["ending"]; onChoose: (e: "good" | "bad" | "none") => void; onBackHome: () => void }) {
   if (ending === "good") {
     return (
       <div className="ending-screen good">
@@ -945,7 +945,9 @@ export function EndingScreen({ ending, onChoose }: { ending: GameState["ending"]
           </p>
           <div className="ending-actions">
             <button className="primary-button" onClick={() => onChoose("none")}>重新选择结局</button>
+            <button className="back-home" onClick={onBackHome}>返回首页</button>
           </div>
+          <p className="ending-foot">想重新开始？首页 → 账号安全 → 遗忘 · 清除本机数据。</p>
         </div>
       </div>
     );
@@ -965,7 +967,9 @@ export function EndingScreen({ ending, onChoose }: { ending: GameState["ending"]
           </p>
           <div className="ending-actions">
             <button className="primary-button" onClick={() => onChoose("none")}>重新选择结局</button>
+            <button className="back-home" onClick={onBackHome}>返回首页</button>
           </div>
+          <p className="ending-foot">想重新开始？首页 → 账号安全 → 遗忘 · 清除本机数据。</p>
         </div>
       </div>
     );
@@ -981,6 +985,7 @@ export function EndingScreen({ ending, onChoose }: { ending: GameState["ending"]
         <div className="ending-actions">
           <button className="primary-button" onClick={() => onChoose("good")}>提交全部证据并注销账号</button>
           <button className="primary-button danger-button" onClick={() => onChoose("bad")}>只处理今天的未读，重新登录</button>
+          <button className="back-home" onClick={onBackHome}>返回首页</button>
         </div>
       </div>
     </div>

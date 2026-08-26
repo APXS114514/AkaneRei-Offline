@@ -49,3 +49,4 @@ next-env.d.ts
 /.npm-cache/
 /.visual-check/
 /更新部署.ps1
+/自动提交.ps1
