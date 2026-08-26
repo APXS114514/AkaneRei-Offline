@@ -170,12 +170,13 @@ test("CASE 04 identity check, memory block and endings exist", async () => {
   assert.match(page, /运营商通话详单/);
   assert.match(page, /本地未同步录音/);
   assert.match(page, /CONNECTION-KEEP/);
-  // 记忆阻断提示明确：候选带来源标签（平台外/平台内），表单说明证据链顺序
+  // 记忆阻断提示明确：候选带来源标签（平台外/平台内），表单说明证据链顺序（无括号说明）
   assert.match(page, /急救系统（平台外）/);
   assert.match(page, /运营商（平台外）/);
   assert.match(page, /设备本地（平台外）/);
   assert.match(page, /回声 ECHOS（平台内）/);
-  assert.match(page, /事故时刻（急救回执 04:08）→ 通话全程/);
+  assert.match(page, /事故时刻 → 通话全程 → 最后的声音/);
+  assert.doesNotMatch(page, /事故时刻（急救回执 04:08）/);
   // 结局
   assert.match(page, /提交全部证据并注销账号/);
   assert.match(page, /晚安，不再是第一次见你/);
