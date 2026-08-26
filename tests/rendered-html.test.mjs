@@ -351,6 +351,11 @@ test("v0.4 flow gaps: welcome window, evidence confirm, Aka-0 archive, QA segmen
   assert.match(page, /luvisLogin: false, case02: "done", loggedIn: false/);
   assert.match(page, /applyRoute\(\{ name: "login" \}\);/);
 
+  // 搜索建议词使用掩码「汐○」（歌单解锁前不泄露完整姓名）
+  assert.match(page, /试试：N9Rtz、04:08、录音、LuvisDrug、汐○、事故/);
+  assert.doesNotMatch(page, /LuvisDrug、汐泊诺思、事故/);
+  assert.match(page, /terms: \["汐泊诺思", "汐○"\]/);
+
   // 汐泊诺思姓名掩码：歌单解锁前所有界面显示「汐○」，解锁后解除掩码（§3.1/§3.2）
   assert.match(page, /export function shioName/);
   assert.match(page, /g\.openedRecords\.includes\("rec-playlist"\) \? "汐泊诺思" : "汐○"/);

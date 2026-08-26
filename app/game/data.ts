@@ -615,7 +615,7 @@ export const SEARCH_INDEX: { terms: string[]; recId: string }[] = [
   { terms: ["注销审计"], recId: "rec-luvis-audit" },
   { terms: ["赫兹", "回声网络", "供应商"], recId: "rec-hz-vendor" },
   { terms: ["文化基金", "资金", "财务"], recId: "rec-hz-fund" },
-  { terms: ["汐泊诺思"], recId: "rec-shio-profile" },
+  { terms: ["汐泊诺思", "汐○"], recId: "rec-shio-profile" },
   { terms: ["歌单", "汐泊与零"], recId: "rec-playlist" },
   { terms: ["歌词", "潮汐", "夜航", "别等", "天亮以后", "未读", "已读"], recId: "rec-playlist" },
   { terms: ["冷备份", "封存"], recId: "rec-cold-backup" },

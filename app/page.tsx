@@ -947,7 +947,7 @@ export default function Page() {
           <p className="surv-typing">正在检索 {survPending} ……</p>
         </div>
       )}
-      {!survPending && searchResults === null && <div className="search-hint">试试：N9Rtz、04:08、录音、LuvisDrug、汐泊诺思、事故</div>}
+      {!survPending && searchResults === null && <div className="search-hint">试试：N9Rtz、04:08、录音、LuvisDrug、汐○、事故</div>}
       {!survPending && searchResults?.kind === "empty" && (
         <div className="search-empty">
           没有找到与「{searchResults.q}」完全匹配的记录。<br />
